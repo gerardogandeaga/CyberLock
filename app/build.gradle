@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.jakewharton.butterknife'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "com.gerardogandeaga.cyberlock"
+        minSdkVersion 21
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    // Google
+    //noinspection GradleCompatible
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:percent:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation 'com.android.support:gridlayout-v7:27.1.1'
+    implementation 'com.android.support:cardview-v7:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:support-annotations:27.1.1'
+
+    // Ide (jet brains)
+    implementation 'org.jetbrains:annotations-java5:15.0'
+
+    // Custom
+    // Fast Adapter
+    implementation 'com.mikepenz:fastadapter:3.2.4@aar'
+    implementation 'com.mikepenz:fastadapter-commons:3.2.4@aar'
+    implementation 'com.mikepenz:fastadapter-extensions-expandable:3.2.4@aar'
+    implementation 'com.mikepenz:fastadapter-extensions:3.0.3@aar'
+    implementation 'com.mikepenz:materialize:1.1.2@aar'
+
+    // Butter Knife
+    implementation 'com.jakewharton:butterknife:8.8.1'               // Butter knife lib view binding
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1' // @BindView
+
+    // Floating Action Button
+    implementation 'com.github.clans:fab:1.6.4'
+
+    // Circle CardImages
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
+
+    // Material Drawer
+    implementation("com.mikepenz:materialdrawer:6.0.7@aar") {
+        transitive = true
+    }
+
+    // SQLCipher
+    implementation "net.zetetic:android-database-sqlcipher:3.5.9@aar"
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.7.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
+}
