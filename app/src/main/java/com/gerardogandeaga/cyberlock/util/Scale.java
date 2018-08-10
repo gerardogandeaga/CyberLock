@@ -1,5 +1,6 @@
 package com.gerardogandeaga.cyberlock.util;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 
@@ -11,15 +12,33 @@ import com.gerardogandeaga.cyberlock.App;
  */
 public class Scale {
 
-    public static float convertDpToPixel(float dp) {
+    public static int convertDpToPixel(int dp) {
         Resources resources = App.getContext().getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
-        return dp * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return (int) (dp / ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
-    public static float convertPixelsToDp(float px) {
+    public static int convertPixelsToDp(int px) {
         Resources resources = App.getContext().getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
-        return px / ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return (int) (px / ((float)metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    /**
+     * @return screen width in px
+     */
+    public static int getScreenWidth(Activity activity) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.widthPixels;
+    }
+
+    /**
+     * @return screen height in px
+     */
+    public static int getScreenHeight(Activity activity) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.heightPixels;
     }
 }
