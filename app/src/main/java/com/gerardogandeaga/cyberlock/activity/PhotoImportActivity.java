@@ -3,7 +3,6 @@ package com.gerardogandeaga.cyberlock.activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,29 +10,26 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gerardogandeaga.cyberlock.GlideApp;
 import com.gerardogandeaga.cyberlock.MediaFetcher;
 import com.gerardogandeaga.cyberlock.R;
+import com.gerardogandeaga.cyberlock.decorations.PhotoItemDecoration;
 import com.gerardogandeaga.cyberlock.objects.Bucket;
 import com.gerardogandeaga.cyberlock.objects.Image;
 import com.gerardogandeaga.cyberlock.util.Filter;
 import com.gerardogandeaga.cyberlock.util.Scale;
 
 import net.idik.lib.slimadapter.SlimAdapter;
+import net.idik.lib.slimadapter.SlimAdapterEx;
 import net.idik.lib.slimadapter.SlimInjector;
 import net.idik.lib.slimadapter.viewinjector.IViewInjector;
 
@@ -67,6 +63,7 @@ public class PhotoImportActivity extends AppCompatActivity {
     private static ImageImportState State = ImageImportState.ALBUM_VIEW;
 
     private static GridLayoutManager GalleryLayoutManager;
+    private static SlimAdapter GallerySlimAdapter;
     private static RecyclerView GalleryRecyclerView;
 
     @BindView(R.id.toolbar)
@@ -99,11 +96,23 @@ public class PhotoImportActivity extends AppCompatActivity {
         final int numColumns = (int) displayWidth / 120;
         final int widthColumns = (int) displayWidth / numColumns;
         GalleryLayoutManager = new GridLayoutManager(this, numColumns);
+        GalleryLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                Object object = GallerySlimAdapter.getItem(position);
+                if (object instanceof Bucket || object instanceof Image) {
+                    return 1;
+                } else {
+                    return numColumns;
+                }
+            }
+        });
 
         // recycler view
         GalleryRecyclerView = new RecyclerView(this);
         GalleryRecyclerView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         GalleryRecyclerView.setLayoutManager(GalleryLayoutManager);
+        GalleryRecyclerView.addItemDecoration(new PhotoItemDecoration(numColumns, 8));
 
         switchFragments(AlbumsFragment.TAG);
     }
@@ -158,16 +167,50 @@ public class PhotoImportActivity extends AppCompatActivity {
         transaction.commit();
     }
 
+    // image selections
+
+    class Selection {
+        ArrayList<Image> mSelectedImages;
+
+        Selection() {
+            mSelectedImages = new ArrayList<>();
+        }
+
+        void select(Image image) {
+            if (!mSelectedImages.contains(image)) {
+                // add new image to array
+                mSelectedImages.add(image);
+            }
+        }
+
+        void selectAll(ArrayList<Image> images) {
+            mSelectedImages = images;
+        }
+
+        void deselect(Image image) {
+            if (mSelectedImages.contains(image)) {
+                mSelectedImages.remove(image);
+            }
+        }
+
+        void deselectAll() {
+            mSelectedImages = new ArrayList<>();
+        }
+
+        boolean isSelected(Image image) {
+            return mSelectedImages.contains(image);
+        }
+    }
+
     // fragments
 
     public static class ImagesFragment extends Fragment {
         public static final String TAG = "imagesFragment";
 
-        private SlimAdapter mSlimAdapter;
-
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            setHasOptionsMenu(true);
 
             Activity.getSupportActionBar().setSubtitle(ImageArrayList.size() + " Images");
             initRecyclerView();
@@ -188,25 +231,12 @@ public class PhotoImportActivity extends AppCompatActivity {
          * initializes grid view with properties to best display photos
          */
         private void initRecyclerView() {
-            double displayWidth = Scale.convertPixelsToDp(Scale.getScreenWidth(getActivity()));
-            final int numColumns =  (int) displayWidth / 120;
-
             // create slim adapter and logic
-
-            GalleryLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                @Override
-                public int getSpanSize(int position) {
-                    return mSlimAdapter.getItem(position) instanceof Image ? 1 : numColumns;
-                }
-            });
-
-            GalleryRecyclerView.setAdapter(null);
-            mSlimAdapter = SlimAdapter.create()
+            GallerySlimAdapter = SlimAdapter.create()
                     .register(R.layout.item_image, new SlimInjector<Image>() {
                         @Override
-                        public void onInject(final Image data, @NonNull IViewInjector injector) {
-                            injector
-                                    .with(R.id.imageview, new IViewInjector.Action() {
+                        public void onInject(@NonNull final Image data, @NonNull final IViewInjector injector) {
+                            injector.with(R.id.imgImage, new IViewInjector.Action() {
                                         @Override
                                         public void action(View view) {
                                             GlideApp.with(view.getContext())
@@ -215,7 +245,7 @@ public class PhotoImportActivity extends AppCompatActivity {
                                                     .into((ImageView) view);
                                         }
                                     })
-                                    .clicked(R.id.imageview, new View.OnClickListener() {
+                                    .clicked(R.id.imgImage, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
                                             Toast.makeText(v.getContext(), "Image Uri : " + data.getUri(), Toast.LENGTH_LONG).show();
@@ -224,15 +254,20 @@ public class PhotoImportActivity extends AppCompatActivity {
                         }
                     })
                     .attachTo(GalleryRecyclerView);
-            mSlimAdapter.updateData(ImageArrayList);
+            GallerySlimAdapter.updateData(ImageArrayList);
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            if (item.getItemId() == R.id.mnu_select_all) {
+                Toast.makeText(getActivity(), "Hi", Toast.LENGTH_SHORT).show();
+            }
+            return true;
         }
     }
 
     public static class AlbumsFragment extends Fragment {
         private static final String TAG = "albumsFragment";
-
-        private SlimAdapter mSlimAdapter;
-        private RecyclerView mRecyclerView;
 
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -244,7 +279,7 @@ public class PhotoImportActivity extends AppCompatActivity {
         @Nullable
         @Override
         public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-            return mRecyclerView;
+            return GalleryRecyclerView;
         }
 
         @Override
@@ -256,26 +291,13 @@ public class PhotoImportActivity extends AppCompatActivity {
          * initializes grid view with properties to best display photos
          */
         private void initRecyclerView() {
-            double displayWidth = Scale.convertPixelsToDp(Scale.getScreenWidth(getActivity()));
-            final int numColumns =  (int) displayWidth / 100;
-
             // create slim adapter and logic
-
-
-            GalleryLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                @Override
-                public int getSpanSize(int position) {
-                    return mSlimAdapter.getItem(position) instanceof Image ? 1 : numColumns;
-                }
-            });
-
-            GalleryRecyclerView.setAdapter(null);
-            mSlimAdapter = SlimAdapter.create()
+            GallerySlimAdapter = SlimAdapter.create(SlimAdapterEx.class)
                     .register(R.layout.item_album, new SlimInjector<Bucket>() {
                         @Override
-                        public void onInject(final Bucket data, @NonNull IViewInjector injector) {
-                            injector
-                                    .with(R.id.imageview, new IViewInjector.Action() {
+                        public void onInject(@NonNull final Bucket data, @NonNull IViewInjector injector) {
+                            injector.text(R.id.tvTitle, data.getName())
+                                    .with(R.id.imgImage, new IViewInjector.Action() {
                                         @Override
                                         public void action(View view) {
                                             GlideApp.with(view.getContext())
@@ -284,89 +306,17 @@ public class PhotoImportActivity extends AppCompatActivity {
                                                     .into((ImageView) view);
                                         }
                                     })
-                                    .clicked(R.id.imageview, new View.OnClickListener() {
+                                    .clicked(R.id.imgImage, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            Toast.makeText(v.getContext(), "Name : " + data.getName(), Toast.LENGTH_LONG).show();
+                                            ImageArrayList = MediaFetcher.requestImages(data.getName());
+                                            switchFragments(ImagesFragment.TAG);
                                         }
                                     });
                         }
                     })
                     .attachTo(GalleryRecyclerView);
-            mSlimAdapter.updateData(ImageArrayList);
-        }
-
-        /**
-         * adapter that fetches ImageArrayList from the sd card
-         */
-        class ImageAdapter extends BaseAdapter {
-
-            @Override
-            public int getCount() {
-                return BucketArrayList.size();
-            }
-
-            @Override
-            public Object getItem(int position) {
-                return position;
-            }
-
-            @Override
-            public long getItemId(int position) {
-                return position;
-            }
-
-            @Override
-            public View getView(final int position, View convertView, ViewGroup parent) {
-                Bucket bucket = BucketArrayList.get(position);
-                // custom views
-                LinearLayout container;
-                ImageView cover;
-                TextView name;
-
-                if (convertView == null) {
-                    int metrics = ((GridView) parent).getColumnWidth();
-
-                    container = new LinearLayout(getActivity());
-                    cover = new ImageView(getActivity());
-                    name = new TextView(getActivity());
-
-                    // linear layout
-                    container.setOrientation(LinearLayout.VERTICAL);
-                    // image view
-                    cover.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    cover.setLayoutParams(new GridView.LayoutParams(metrics, metrics));
-                    // text view
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        name.setTextAppearance(R.style.MyText_List_AlbumName);
-                    }
-                    name.setPadding(2, 2, 2, 2);
-                    name.setMaxLines(1);
-                    name.setEllipsize(TextUtils.TruncateAt.END);
-                    name.setLayoutParams(new GridView.LayoutParams(metrics, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-                    // add views to container
-                    container.addView(cover);
-                    container.addView(name);
-
-                    // final container size adjustments
-                    container.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                } else {
-                    container = (LinearLayout) convertView;
-                    cover = (ImageView) container.getChildAt(0);
-                    name = (TextView) container.getChildAt(1);
-                }
-
-                name.setText(bucket.getName());
-
-                // load image into image view
-                GlideApp.with(getActivity())
-                        .load(bucket.getCoverImageUri())
-                        .fitCenter()
-                        .into(cover);
-
-                return container;
-            }
+            GallerySlimAdapter.updateData(BucketArrayList);
         }
     }
 }
