@@ -1,4 +1,4 @@
-package com.gerardogandeaga.cyberlock.decorations;
+package com.gerardogandeaga.cyberlock.lists.decorations;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

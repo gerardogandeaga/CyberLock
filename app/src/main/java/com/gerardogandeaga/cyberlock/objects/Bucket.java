@@ -40,4 +40,9 @@ public class Bucket {
     public boolean equals(Object obj) {
         return obj instanceof Bucket && mName.equals(((Bucket) obj).getName());
     }
+
+    @Override
+    public String toString() {
+        return mName;
+    }
 }

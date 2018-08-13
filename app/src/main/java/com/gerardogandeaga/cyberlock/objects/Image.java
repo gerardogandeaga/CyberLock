@@ -25,4 +25,9 @@ public class Image {
     public String getUri() {
         return mUri;
     }
+
+    @Override
+    public String toString() {
+        return "bucket -> " + mBucketName + " | address ->  " + mUri;
+    }
 }
