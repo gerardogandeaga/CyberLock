@@ -10,14 +10,16 @@
         android:id="@+id/imgImage"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
         android:scaleType="centerCrop"
-        app:layout_constraintDimensionRatio="1:1"
-        android:foreground="?attr/selectableItemBackgroundBorderless"/>
+        app:layout_constraintDimensionRatio="1:1"/>
 
     <android.support.v7.widget.AppCompatCheckBox
         android:id="@+id/checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/imgImage"/>
 

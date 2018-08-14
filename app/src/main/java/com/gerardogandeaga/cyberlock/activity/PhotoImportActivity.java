@@ -3,6 +3,7 @@ package com.gerardogandeaga.cyberlock.activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,7 +21,9 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.gerardogandeaga.cyberlock.MediaFetcher;
+import com.gerardogandeaga.cyberlock.PermissionRequester;
 import com.gerardogandeaga.cyberlock.R;
+import com.gerardogandeaga.cyberlock.interfaces.OnButtonPressedListener;
 import com.gerardogandeaga.cyberlock.lists.decorations.PhotoItemDecoration;
 import com.gerardogandeaga.cyberlock.lists.items.AlbumItem;
 import com.gerardogandeaga.cyberlock.lists.items.ImageItem;
@@ -43,14 +46,13 @@ import butterknife.ButterKnife;
  * @author gerardogandeaga
  * created on 2018-07-28
  */
-enum ImageImportState {
-    ALBUM_VIEW,
-    IMAGE_VIEW
-}
 public class PhotoImportActivity extends AppCompatActivity {
+    private static final String TAG = "PhotoImportActivity";
+
+    private static OnButtonPressedListener ButtonPressedListener;
+
     private static AppCompatActivity Activity;
     private static FragmentManager Manager;
-    private static ImageImportState State = ImageImportState.ALBUM_VIEW;
 
     private static MenuInflater ActivityMenuInflater;
 
@@ -66,36 +68,42 @@ public class PhotoImportActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_toolbar_only);
-        ButterKnife.bind(this);
+        // here we need to check if we have permission to read storage data. if not then we have to cancel any requests
+        if (!PermissionRequester.canReadExternalStorage(this)) {
+            // request permission
+            PermissionRequester.requestReadExternalStorage(this);
+        } else {
+            setContentView(R.layout.activity_toolbar_only);
+            ButterKnife.bind(this);
 
-        Activity = this;
+            // initialize views
+            setSupportActionBar(mToolbar);
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // request image information
-        MediaFetcher.requestImages(null); // <- we call first to init the caches
-        BucketArrayList = MediaFetcher.requestAlbums();
+            Activity = this;
 
-        // prepare fragment
-        Manager = getFragmentManager();
+            // request image information
+            MediaFetcher.requestImages(null); // <- we call first to init the caches
+            BucketArrayList = MediaFetcher.requestAlbums();
 
-        // initialize views
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            // prepare fragment
+            Manager = getFragmentManager();
 
-        // grid layout dimensions
-        final double displayWidth = Scale.convertPixelsToDp(Scale.getScreenWidth(this));
-        final int numColumns = (int) displayWidth / 120;
-        final int widthColumns = (int) displayWidth / numColumns;
-        GridLayoutManager galleryLayoutManager = new GridLayoutManager(this, numColumns);
+            // grid layout dimensions
+            final double displayWidth = Scale.convertPixelsToDp(Scale.getScreenWidth(this));
+            final int numColumns = (int) displayWidth / 120;
+            final int widthColumns = (int) displayWidth / numColumns;
+            GridLayoutManager galleryLayoutManager = new GridLayoutManager(this, numColumns);
 
-        // recycler view
-        GalleryRecyclerView = new RecyclerView(this);
-        GalleryRecyclerView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        GalleryRecyclerView.setLayoutManager(galleryLayoutManager);
-        GalleryRecyclerView.addItemDecoration(new PhotoItemDecoration(numColumns, 4));
+            // recycler view
+            GalleryRecyclerView = new RecyclerView(this);
+            GalleryRecyclerView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            GalleryRecyclerView.setLayoutManager(galleryLayoutManager);
+            GalleryRecyclerView.addItemDecoration(new PhotoItemDecoration(numColumns, 4));
 
-        switchFragments(AlbumsFragment.TAG);
+            switchFragments(AlbumsFragment.TAG);
+        }
     }
 
     @Override
@@ -115,21 +123,29 @@ public class PhotoImportActivity extends AppCompatActivity {
 
         switch (fragTag) {
             case ImagesFragment.TAG:
-                transaction.replace(container, new ImagesFragment());
-                State = ImageImportState.IMAGE_VIEW;
+                ImagesFragment imageFrag = new ImagesFragment();
+                ButtonPressedListener = imageFrag;
+                transaction.replace(container, imageFrag);
                 break;
             case AlbumsFragment.TAG:
-                transaction.replace(container, new AlbumsFragment());
-                State = ImageImportState.ALBUM_VIEW;
+                AlbumsFragment albumFrag = new AlbumsFragment();
+                ButtonPressedListener = albumFrag;
+                transaction.replace(container, albumFrag);
                 break;
         }
 
         transaction.commit();
     }
 
+    @Override
+    public void onBackPressed() {
+        ButtonPressedListener.onBackPressed();
+//        super.onBackPressed();
+    }
+
     // fragments
 
-    public static class ImagesFragment extends Fragment {
+    public static class ImagesFragment extends Fragment implements OnButtonPressedListener {
         public static final String TAG = "ImagesFragment";
         private ArrayList<Image> mViewingImages;
         private FastItemAdapter<ImageItem> mAdapter;
@@ -173,14 +189,11 @@ public class PhotoImportActivity extends AppCompatActivity {
                     return true;
 
                 case R.id.mnu_done:
-                    Toast.makeText(getActivity(), "Importing...", Toast.LENGTH_SHORT).show();
+                    importSelectedImages();
                     return true;
 
                 case R.id.mnu_select_all:
-                    mAdapterSelector.select();
-                    for (int i = 0; i < mAdapter.getItemCount(); i++) {
-                        mAdapterSelector.select(i);
-                    }
+                    selectAllImages();
                     return true;
             }
             return false;
@@ -231,9 +244,40 @@ public class PhotoImportActivity extends AppCompatActivity {
 
             mAdapter.add(imageItems);
         }
+
+        private void importSelectedImages() {
+            if (!mAdapterSelector.getSelectedItems().isEmpty()) {
+                ArrayList<Image> selectedImages = new ArrayList<>();
+                for (ImageItem item : mAdapterSelector.getSelectedItems()) {
+                    selectedImages.add(item.getImage());
+                }
+            }
+        }
+
+        private void selectAllImages() {
+            for (int i = 0; i < mAdapter.getItemCount(); i++) {
+                mAdapterSelector.select(i);
+            }
+        }
+
+        // back button listener
+
+        @Override
+        public void onBackPressed() {
+            // first deselect all images if there are any
+            if (mAdapterSelector.getSelectedItems().isEmpty()) {
+                for (int i = 0; i < mAdapter.getItemCount(); i++) {
+                    mAdapterSelector.deselect(i);
+                }
+                return;
+            }
+
+            // go back to albums
+            switchFragments(AlbumsFragment.TAG);
+        }
     }
 
-    public static class AlbumsFragment extends Fragment {
+    public static class AlbumsFragment extends Fragment implements OnButtonPressedListener {
         private static final String TAG = "AlbumsFragment";
 
         @Override
@@ -301,6 +345,28 @@ public class PhotoImportActivity extends AppCompatActivity {
             }
 
             adapter.add(albumItems);
+        }
+
+        // back button listener
+
+        @Override
+        public void onBackPressed() {
+            Toast.makeText(getActivity(), "Back!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // permit granted
+                recreate(); // recreate activity
+            } else {
+                // permit denied
+                moveTaskToBack(true);
+                android.os.Process.killProcess(android.os.Process.myPid());
+                System.exit(1);
+            }
         }
     }
 }
