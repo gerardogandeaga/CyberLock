@@ -6,7 +6,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 
 import com.gerardogandeaga.cyberlock.objects.Bucket;
-import com.gerardogandeaga.cyberlock.objects.Image;
+import com.gerardogandeaga.cyberlock.objects.Media;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,9 +37,9 @@ public class MediaFetcher {
     // data we do not want to have to keep requesting from phone, so we only update these vars when needed.
     // this also saves memory and time by only having one instance of the data
     private static ArrayList<Bucket> BucketCache;
-    private static ArrayList<Image> ImageCache;
+    private static ArrayList<Media> mediaCache;
 
-    private static HashMap<String, ArrayList<Image>> AlbumCache;
+    private static HashMap<String, ArrayList<Media>> AlbumCache;
 
     /**
      * updates cache if BucketCache are null
@@ -57,8 +57,8 @@ public class MediaFetcher {
      * @param selectionKey name of the album to which the arrays are stored under in the HashMap
      * @return list of all intended images with respective selection args
      */
-    public static ArrayList<Image> requestImages(String selectionKey) {
-        if (AlbumCache == null || ImageCache == null || ImageCache.size() == 0) {
+    public static ArrayList<Media> requestImages(String selectionKey) {
+        if (AlbumCache == null || mediaCache == null || mediaCache.size() == 0) {
             cacheData(); // update
         }
 
@@ -83,7 +83,7 @@ public class MediaFetcher {
         if (cursor != null && cursor.getCount() > 0) {
             // init cache arrays
             BucketCache = new ArrayList<>();
-            ImageCache = new ArrayList<>();
+            mediaCache = new ArrayList<>();
 
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToPosition(i);
@@ -94,8 +94,8 @@ public class MediaFetcher {
                 String uri = cursor.getString(uriColumn);
                 String bucketName = cursor.getString(bucketNameColumn);
 
-                // create image and bucket
-                Image image = new Image()
+                // create media and bucket
+                Media media = new Media()
                         .withUri(uri)
                         .withAlbum(bucketName);
                 Bucket bucket = new Bucket()
@@ -103,7 +103,7 @@ public class MediaFetcher {
                         .withCoverImageUri(uri);
 
                 // add images to cache
-                ImageCache.add(i, image);
+                mediaCache.add(i, media);
 
                 // update bucket cache
                 addToBucketCache(bucket);
@@ -113,7 +113,7 @@ public class MediaFetcher {
         }
 
         // we reverse it to match the order of the phone
-        Collections.reverse(ImageCache);
+        Collections.reverse(mediaCache);
 
         // setup albums for fast access
         setupImageAlbumsHashMap();
@@ -149,23 +149,23 @@ public class MediaFetcher {
 
     private static void setupImageAlbumsHashMap() {
         AlbumCache = new HashMap<>();
-        AlbumCache.put(null, ImageCache);
+        AlbumCache.put(null, mediaCache);
 
         // add image to map according to the album name
         for (int i = 0; i < BucketCache.size(); i++) {
             Bucket bucket = BucketCache.get(i);
-            ArrayList<Image> imageArray = new ArrayList<>();
+            ArrayList<Media> mediaArray = new ArrayList<>();
 
-            // build the imageArray with matching bucket
-            for (int j = 0; j < ImageCache.size(); j++) {
-                Image image = ImageCache.get(j);
-                if (image.getBucketName().equals(bucket.getName())) {
-                    imageArray.add(image);
+            // build the mediaArray with matching bucket
+            for (int j = 0; j < mediaCache.size(); j++) {
+                Media media = mediaCache.get(j);
+                if (media.getBucketName().equals(bucket.getName())) {
+                    mediaArray.add(media);
                 }
             }
 
             // add array to map with bucket name being the key
-            AlbumCache.put(bucket.getName(), imageArray);
+            AlbumCache.put(bucket.getName(), mediaArray);
         }
     }
 }

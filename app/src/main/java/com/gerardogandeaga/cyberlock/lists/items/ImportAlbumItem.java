@@ -1,13 +1,13 @@
 package com.gerardogandeaga.cyberlock.lists.items;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.gerardogandeaga.cyberlock.GlideApp;
+import com.bumptech.glide.Glide;
+import com.gerardogandeaga.cyberlock.App;
 import com.gerardogandeaga.cyberlock.R;
 import com.gerardogandeaga.cyberlock.objects.Bucket;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
@@ -22,10 +22,10 @@ import butterknife.ButterKnife;
  * @author gerardogandeaga
  * created on 2018-08-12
  */
-public class AlbumItem extends AbstractItem<AlbumItem, AlbumItem.ViewHolder> {
+public class ImportAlbumItem extends AbstractItem<ImportAlbumItem, ImportAlbumItem.ViewHolder> {
     private Bucket mBucket;
 
-    public AlbumItem(Bucket bucket) {
+    public ImportAlbumItem(Bucket bucket) {
         this.mBucket = bucket;
     }
 
@@ -40,7 +40,7 @@ public class AlbumItem extends AbstractItem<AlbumItem, AlbumItem.ViewHolder> {
 
     @Override
     public int getLayoutRes() {
-        return R.layout.item_album;
+        return R.layout.item_import_album;
     }
 
     @NonNull
@@ -49,10 +49,7 @@ public class AlbumItem extends AbstractItem<AlbumItem, AlbumItem.ViewHolder> {
         return new ViewHolder(view);
     }
 
-    protected class ViewHolder extends FastItemAdapter.ViewHolder<AlbumItem> {
-        @NonNull private View mView;
-        @NonNull private Context mContext;
-
+    protected class ViewHolder extends FastItemAdapter.ViewHolder<ImportAlbumItem> {
         @BindView(R.id.container) ConstraintLayout Container;
         @BindView(R.id.imgImage)  ImageView Image;
         @BindView(R.id.tvTitle)   TextView Name;
@@ -60,22 +57,20 @@ public class AlbumItem extends AbstractItem<AlbumItem, AlbumItem.ViewHolder> {
         ViewHolder(@NonNull View view) {
             super(view);
             ButterKnife.bind(this, view);
-            this.mView = view;
-            this.mContext = mView.getContext();
         }
 
         @Override
-        public void bindView(@NonNull AlbumItem item, @NonNull List<Object> payloads) {
+        public void bindView(@NonNull ImportAlbumItem item, @NonNull List<Object> payloads) {
             Name.setText(item.getBucket().getName());
             // add image to the image view
-            GlideApp.with(mContext).load(item.getBucket().getCoverImageUri()).into(Image);
+            Glide.with(App.getContext()).load(item.getBucket().getCoverImageUri()).into(Image);
         }
 
         @Override
-        public void unbindView(@NonNull AlbumItem item) {
+        public void unbindView(@NonNull ImportAlbumItem item) {
             Name.setText(null);
             // remove image from view
-            GlideApp.with(mContext).clear(Image);
+            Glide.with(App.getContext()).clear(Image);
         }
     }
 }

@@ -10,17 +10,17 @@ public class Bucket {
     private String mCoverImageUri;
 
     public Bucket withSize(int size) {
-        mSize = size;
+        this.mSize = size;
         return this;
     }
 
     public Bucket withName(String name) {
-        mName = name;
+        this.mName = name;
         return this;
     }
 
     public Bucket withCoverImageUri(String coverImageUri) {
-        mCoverImageUri = coverImageUri;
+        this.mCoverImageUri = coverImageUri;
         return this;
     }
 

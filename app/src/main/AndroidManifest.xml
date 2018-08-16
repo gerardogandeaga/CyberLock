@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".activity.PhotoImportActivity">
+        <!-- media viewer -->
+        <activity android:name=".activity.ImageViewerActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -25,6 +26,18 @@
 
         </activity>
 
+        <!-- media import -->
+        <activity android:name=".activity.ImageImportActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+        </activity>
+
+        <!-- login -->
         <activity android:name=".activity.AuthenticationActivity">
 
             <intent-filter>

@@ -8,11 +8,11 @@ import android.view.View;
  * @author gerardogandeaga
  * created on 2018-08-10
  */
-public class PhotoItemDecoration extends RecyclerView.ItemDecoration {
+public class ImageItemDecoration extends RecyclerView.ItemDecoration {
     private int mSpanCount;
     private int mSpacing;
 
-    public PhotoItemDecoration(int spanCount, int spacing) {
+    public ImageItemDecoration(int spanCount, int spacing) {
         mSpanCount = spanCount;
         mSpacing = spacing;
     }

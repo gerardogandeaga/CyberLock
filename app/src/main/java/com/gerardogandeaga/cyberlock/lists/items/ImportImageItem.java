@@ -3,6 +3,7 @@ package com.gerardogandeaga.cyberlock.lists.items;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -22,10 +23,10 @@ import butterknife.ButterKnife;
  * @author gerardogandeaga
  * created on 2018-08-12
  */
-public class ImageItem extends AbstractItem<ImageItem, ImageItem.ViewHolder> {
+public class ImportImageItem extends AbstractItem<ImportImageItem, ImportImageItem.ViewHolder> {
     private Media mMedia;
 
-    public ImageItem(Media media) {
+    public ImportImageItem(Media media) {
         this.mMedia = media;
     }
 
@@ -40,7 +41,7 @@ public class ImageItem extends AbstractItem<ImageItem, ImageItem.ViewHolder> {
 
     @Override
     public int getLayoutRes() {
-        return R.layout.item_image;
+        return R.layout.item_import_image;
     }
 
     @NonNull
@@ -49,9 +50,10 @@ public class ImageItem extends AbstractItem<ImageItem, ImageItem.ViewHolder> {
         return new ViewHolder(view);
     }
 
-    protected class ViewHolder extends FastItemAdapter.ViewHolder<ImageItem> {
+    protected class ViewHolder extends FastItemAdapter.ViewHolder<ImportImageItem> {
         @BindView(R.id.container) ConstraintLayout Container;
         @BindView(R.id.imgImage)  ImageView Image;
+        @BindView(R.id.checkbox)  CheckBox Selected;
 
         ViewHolder(@NonNull View view) {
             super(view);
@@ -59,13 +61,14 @@ public class ImageItem extends AbstractItem<ImageItem, ImageItem.ViewHolder> {
         }
 
         @Override
-        public void bindView(@NonNull ImageItem item, @NonNull List<Object> payloads) {
+        public void bindView(@NonNull ImportImageItem item, @NonNull List<Object> payloads) {
+            Selected.setChecked(item.isSelected());
             // add image to the image view
-            Glide.with(App.getContext()).load(item.getMedia().getImageBitmap()).into(Image);
+            Glide.with(App.getContext()).load(item.getMedia().getUri()).into(Image);
         }
 
         @Override
-        public void unbindView(@NonNull ImageItem item) {
+        public void unbindView(@NonNull ImportImageItem item) {
             // remove image from view
             GlideApp.with(App.getContext()).clear(Image);
         }
