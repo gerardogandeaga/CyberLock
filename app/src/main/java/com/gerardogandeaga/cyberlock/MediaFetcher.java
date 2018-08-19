@@ -88,14 +88,17 @@ public class MediaFetcher {
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToPosition(i);
 
-                int uriColumn = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-                int bucketNameColumn = cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+                int idColumn = cursor.getColumnIndex(MediaStore.Images.Media._ID); // image id
+                int uriColumn = cursor.getColumnIndex(MediaStore.Images.Media.DATA); // uri
+                int bucketNameColumn = cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME); // bucket
                 // string values
+                String id = cursor.getString(idColumn);
                 String uri = cursor.getString(uriColumn);
                 String bucketName = cursor.getString(bucketNameColumn);
 
                 // create media and bucket
                 Media media = new Media()
+                        .withId(id)
                         .withUri(uri)
                         .withAlbum(bucketName);
                 Bucket bucket = new Bucket()

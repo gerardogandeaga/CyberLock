@@ -48,7 +48,8 @@ dependencies {
     implementation 'com.mikepenz:materialize:1.1.2@aar'
 
     // Butter Knife
-    implementation 'com.jakewharton:butterknife:8.8.1'               // Butter knife lib view binding
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    // Butter knife lib view binding
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1' // @BindView
 
     // Floating Action Button

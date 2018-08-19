@@ -3,6 +3,7 @@ package com.gerardogandeaga.cyberlock.activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.gerardogandeaga.cyberlock.MediaFetcher;
 import com.gerardogandeaga.cyberlock.PermissionRequester;
 import com.gerardogandeaga.cyberlock.R;
+import com.gerardogandeaga.cyberlock.storage.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.dialogs.ImagePreviewDialog;
 import com.gerardogandeaga.cyberlock.interfaces.OnButtonPressedListener;
 import com.gerardogandeaga.cyberlock.lists.decorations.ImageItemDecoration;
@@ -154,6 +156,8 @@ public class ImageImportActivity extends AppCompatActivity {
 
     public static class ImagesFragment extends Fragment implements OnButtonPressedListener {
         public static final String TAG = "ImagesFragment";
+
+        private DBImageAccessor mDBAccessor;
         private ArrayList<Media> mViewingMedia;
         private FastItemAdapter<ImportImageItem> mAdapter;
         private SelectExtension<ImportImageItem> mAdapterSelector;
@@ -162,6 +166,7 @@ public class ImageImportActivity extends AppCompatActivity {
         public void onCreate(@Nullable Bundle savedInstanceState) {
             setHasOptionsMenu(true);
             this.mViewingMedia = MediaFetcher.requestImages(CurrentBucket.getName());
+            this.mDBAccessor = DBImageAccessor.getInstance();
 
             super.onCreate(savedInstanceState);
         }
@@ -243,7 +248,7 @@ public class ImageImportActivity extends AppCompatActivity {
                     return true;
 
                 case R.id.mnu_select_all:
-                    selectAllImages();
+                    selectAll();
                     return true;
             }
             return false;
@@ -251,16 +256,39 @@ public class ImageImportActivity extends AppCompatActivity {
 
         private void importSelectedImages() {
             if (!mAdapterSelector.getSelectedItems().isEmpty()) {
-                ArrayList<Media> selectedMedia = new ArrayList<>();
+                final ArrayList<Media> selectedMedia = new ArrayList<>();
                 for (ImportImageItem item : mAdapterSelector.getSelectedItems()) {
                     selectedMedia.add(item.getMedia());
+                }
+                // add database
+                Toast.makeText(Activity, "Saving Selected Items...", Toast.LENGTH_SHORT).show();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mDBAccessor.save(selectedMedia);
+                        Toast.makeText(Activity, "Importing complete!", Toast.LENGTH_SHORT).show();
+                    }
+                }).start();
+
+            } else {
+                Toast.makeText(Activity, "No Items Selected", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        private void selectAll() {
+            for (int i = 0; i < mAdapter.getItemCount(); i++) {
+                if (!mAdapter.getItem(i).isSelected()) {
+                    mAdapterSelector.select(i);
                 }
             }
         }
 
-        private void selectAllImages() {
+        private void deselectAll() {
             for (int i = 0; i < mAdapter.getItemCount(); i++) {
-                mAdapterSelector.select(i);
+                if (mAdapter.getItem(i).isSelected()) {
+                    mAdapterSelector.deselect(i);
+                }
             }
         }
 
@@ -270,9 +298,7 @@ public class ImageImportActivity extends AppCompatActivity {
         public void onBackPressed() {
             // first deselect all images if there are any selected images
             if (!mAdapterSelector.getSelectedItems().isEmpty()) {
-                for (int i = 0; i < mAdapter.getItemCount(); i++) {
-                    mAdapterSelector.deselect(i);
-                }
+                deselectAll();
                 return;
             }
 
@@ -313,7 +339,6 @@ public class ImageImportActivity extends AppCompatActivity {
             // create the list of image items from the images
             ArrayList<ImportAlbumItem> importAlbumItems = new ArrayList<>();
             for (Bucket bucket : BucketArrayList) {
-                System.out.println(bucket);
                 importAlbumItems.add(new ImportAlbumItem(bucket));
             }
 
@@ -334,7 +359,9 @@ public class ImageImportActivity extends AppCompatActivity {
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             if (item.getItemId() == android.R.id.home) {
-                Toast.makeText(Activity, "Back", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(Activity, MenuActivity.class);
+                Activity.startActivity(i);
+                Activity.finish();
                 return true;
             }
             return false;

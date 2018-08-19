@@ -10,10 +10,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.gerardogandeaga.cyberlock.storage.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.lists.decorations.ImageItemDecoration;
 import com.gerardogandeaga.cyberlock.lists.items.ImageItem;
+import com.gerardogandeaga.cyberlock.objects.savable.Image;
 import com.gerardogandeaga.cyberlock.util.Scale;
-import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
+
+import java.util.ArrayList;
 
 /**
  * @author gerardogandeaga
@@ -22,21 +26,26 @@ import com.mikepenz.fastadapter.FastAdapter;
  * image gallery from the sqlcipher db
  */
 public class ImageListViewerFragment extends Fragment {
-    //
+    private static final String TAG = "ImageListViewerFragment";
 
-    //
     private AppCompatActivity mActivity;
 
-    private FastAdapter<ImageItem> mAdapter;
-    private RecyclerView mImageViewRecyclerView;
+    private ArrayList<Image> mImages;
+    private FastItemAdapter<ImageItem> mAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         this.mActivity = ((AppCompatActivity) getActivity());
+
+        // pull images from database
+        DBImageAccessor DBAccessor = DBImageAccessor.getInstance();
+        this.mImages = DBAccessor.getImages();
     }
 
+    /**
+     * create recycler view and configure its item adapter
+     */
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -44,21 +53,23 @@ public class ImageListViewerFragment extends Fragment {
         final int numColumns = (int) displayWidth / 120;
 
         // setup recycler view
-        this.mImageViewRecyclerView = new RecyclerView(mActivity);
-        mImageViewRecyclerView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        mImageViewRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, numColumns));
-        mImageViewRecyclerView.addItemDecoration(new ImageItemDecoration(numColumns, 4));
+        RecyclerView imageViewRecyclerView = new RecyclerView(mActivity);
+        imageViewRecyclerView.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        imageViewRecyclerView.setLayoutManager(new GridLayoutManager(mActivity, numColumns));
+        imageViewRecyclerView.addItemDecoration(new ImageItemDecoration(numColumns, 4));
 
         // setup adapter
-        this.mAdapter = new FastAdapter<>();
+        this.mAdapter = new FastItemAdapter<>();
         mAdapter.setHasStableIds(true);
 
+        // add items
+        ArrayList<ImageItem> imageItems = ImageItem.ItemBuilder.buildItems(mImages);
+        mAdapter.add(imageItems);
+
         // attach adapter
-        mImageViewRecyclerView.setAdapter(mAdapter);
+        imageViewRecyclerView.setAdapter(mAdapter);
 
-        // todo pull bitmap images from sqlcipher database and add to adapter
-
-        return mImageViewRecyclerView;
+        return imageViewRecyclerView;
     }
 
     @Override

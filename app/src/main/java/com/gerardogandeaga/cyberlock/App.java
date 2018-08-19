@@ -3,7 +3,7 @@ package com.gerardogandeaga.cyberlock;
 import android.app.Application;
 import android.content.Context;
 
-import com.gerardogandeaga.cyberlock.database.DatabaseOpenHelper;
+import com.gerardogandeaga.cyberlock.storage.database.DatabaseOpenHelper;
 
 import net.sqlcipher.database.SQLiteDatabase;
 
@@ -31,6 +31,16 @@ public class App extends Application {
         // this do is always created on application startup and is made static to only one instance of the
         // db at all times for better performance
         Database = new DatabaseOpenHelper(Context);
+
+
+        // init db
+        // begin db and set password // todo create db accessors
+        DatabaseOpenHelper database = App.getDatabase();
+        database.recycle();
+
+        App.getDatabase().setPassword("TMP_PASSWORD");
+        database.update();
+        //
     }
 
     public static Context getContext() {

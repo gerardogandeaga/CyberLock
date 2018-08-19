@@ -1,24 +1,53 @@
 package com.gerardogandeaga.cyberlock.objects.savable;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
 /**
  * @author gerardogandeaga
  * created on 2018-08-16
  */
 public class Image extends SavableObject {
-    private Bitmap mImageBitmap;
+    private String mBucket; // album in app
+    private String mId; // image name
+    private String mPath; // new path in app
+    private String mUri; // new uri in app
+    private Bitmap mImageBitmap; // cached images in app
+    // old
+    private String mOldBucket;
+    private String mOldPath;
+    private String mOldUri;
 
     public Image(
-            long created,
-            byte[] imageBytes
+            long timeCreated,
+            String bucket,
+            String id,
+            String path,
+            String uri
     ) {
-        setTimeCreated(created);
-        this.mImageBitmap = getImageBitmap(imageBytes);
+        setTimeCreated(timeCreated);
+        this.mBucket = bucket;
+        this.mId = id;
+        this.mPath = path;
+        this.mUri = uri;
     }
 
-    private Bitmap getImageBitmap(byte[] imageBytes) {
-        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+    public String getBucket() {
+        return mBucket;
+    }
+
+    public String getId() {
+        return mId;
+    }
+
+    public String getPath() {
+        return mPath;
+    }
+
+    public String getUri() {
+        return mUri;
+    }
+
+    public Bitmap getImageBitmap() {
+        return mImageBitmap;
     }
 }

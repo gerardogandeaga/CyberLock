@@ -1,8 +1,8 @@
-package com.gerardogandeaga.cyberlock.database;
+package com.gerardogandeaga.cyberlock.storage.database;
 
 import android.content.Context;
 
-import com.gerardogandeaga.cyberlock.interfaces.DBImageConstants;
+import com.gerardogandeaga.cyberlock.interfaces.constants.DBImageConstants;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -63,11 +63,14 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConst
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + " IMAGES" + "(" +
+        db.execSQL("CREATE TABLE " + TABLE_IMAGE + "(" +
 
 //              KEY                  DATA TYPE
+                DATE_CREATED +     " INTEGER PRIMARY KEY, " +
                 KEY_BUCKET +       " TEXT, " +
-                KEY_IMAGE_BITMAP + " BLOB, " +
+                KEY_IMAGE_ID +     " TEXT," +
+                KEY_IMAGE_PATH +   " TEXT " +
+                KEY_IMAGE_URI +    " TEXT," +
         ");");
     }
 
