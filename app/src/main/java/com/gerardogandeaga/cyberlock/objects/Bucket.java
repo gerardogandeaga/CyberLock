@@ -7,7 +7,14 @@ package com.gerardogandeaga.cyberlock.objects;
 public class Bucket {
     private int mSize;
     private String mName;
-    private String mCoverImageUri;
+    private String mCoverUri;
+
+    public Bucket(String bucketName, String coverUri) {
+        this.mName = bucketName;
+        this.mCoverUri = coverUri;
+    }
+
+    // setters
 
     public Bucket withSize(int size) {
         this.mSize = size;
@@ -19,10 +26,12 @@ public class Bucket {
         return this;
     }
 
-    public Bucket withCoverImageUri(String coverImageUri) {
-        this.mCoverImageUri = coverImageUri;
+    public Bucket withCoverUri(String coverUri) {
+        this.mCoverUri = coverUri;
         return this;
     }
+
+    // getters
 
     public int getSize() {
         return mSize;
@@ -32,9 +41,11 @@ public class Bucket {
         return mName;
     }
 
-    public String getCoverImageUri() {
-        return mCoverImageUri;
+    public String getCoverUri() {
+        return mCoverUri;
     }
+
+    // overrides
 
     @Override
     public boolean equals(Object obj) {
@@ -43,6 +54,6 @@ public class Bucket {
 
     @Override
     public String toString() {
-        return mName;
+        return "bucket name : " + mName;
     }
 }

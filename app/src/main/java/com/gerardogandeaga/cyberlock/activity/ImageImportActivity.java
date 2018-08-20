@@ -1,5 +1,6 @@
 package com.gerardogandeaga.cyberlock.activity;
 
+import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -24,14 +25,14 @@ import android.widget.Toast;
 import com.gerardogandeaga.cyberlock.MediaFetcher;
 import com.gerardogandeaga.cyberlock.PermissionRequester;
 import com.gerardogandeaga.cyberlock.R;
-import com.gerardogandeaga.cyberlock.storage.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.dialogs.ImagePreviewDialog;
 import com.gerardogandeaga.cyberlock.interfaces.OnButtonPressedListener;
 import com.gerardogandeaga.cyberlock.lists.decorations.ImageItemDecoration;
 import com.gerardogandeaga.cyberlock.lists.items.ImportAlbumItem;
 import com.gerardogandeaga.cyberlock.lists.items.ImportImageItem;
 import com.gerardogandeaga.cyberlock.objects.Bucket;
-import com.gerardogandeaga.cyberlock.objects.Media;
+import com.gerardogandeaga.cyberlock.objects.savable.Image;
+import com.gerardogandeaga.cyberlock.storage.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.util.Filter;
 import com.gerardogandeaga.cyberlock.util.Scale;
 import com.mikepenz.fastadapter.IAdapter;
@@ -76,9 +77,9 @@ public class ImageImportActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // here we need to check if we have permission to read storage data. if not then we have to cancel any requests
-        if (!PermissionRequester.canReadExternalStorage(this)) {
+        if (!PermissionRequester.canReadExternalStorage(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             // request permission
-            PermissionRequester.requestReadExternalStorage(this);
+            PermissionRequester.requestReadExternalStorage(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         } else {
             setContentView(R.layout.activity_toolbar_only);
             ButterKnife.bind(this);
@@ -100,7 +101,6 @@ public class ImageImportActivity extends AppCompatActivity {
             // grid layout dimensions
             final double displayWidth = Scale.convertPixelsToDp(Scale.getScreenWidth(this));
             final int numColumns = (int) displayWidth / 120;
-            final int widthColumns = (int) displayWidth / numColumns;
             GridLayoutManager galleryLayoutManager = new GridLayoutManager(this, numColumns);
 
             // recycler view
@@ -158,14 +158,14 @@ public class ImageImportActivity extends AppCompatActivity {
         public static final String TAG = "ImagesFragment";
 
         private DBImageAccessor mDBAccessor;
-        private ArrayList<Media> mViewingMedia;
+        private ArrayList<Image> mProjectedImages;
         private FastItemAdapter<ImportImageItem> mAdapter;
         private SelectExtension<ImportImageItem> mAdapterSelector;
 
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
             setHasOptionsMenu(true);
-            this.mViewingMedia = MediaFetcher.requestImages(CurrentBucket.getName());
+            this.mProjectedImages = MediaFetcher.requestImages(CurrentBucket.getName());
             this.mDBAccessor = DBImageAccessor.getInstance();
 
             super.onCreate(savedInstanceState);
@@ -199,7 +199,7 @@ public class ImageImportActivity extends AppCompatActivity {
             mAdapter.withOnLongClickListener(new OnLongClickListener<ImportImageItem>() {
                 @Override
                 public boolean onLongClick(@NonNull View view, @NonNull IAdapter<ImportImageItem> adapter, @NonNull ImportImageItem item, int position) {
-                    new ImagePreviewDialog(Activity, item.getMedia().getUri()).showDialog();
+                    new ImagePreviewDialog(Activity, item.getImage().getCurrentUri()).showDialog();
                     return false;
                 }
             });
@@ -210,15 +210,15 @@ public class ImageImportActivity extends AppCompatActivity {
                     int count = mAdapterSelector.getSelectedItems().size();
                     // update the action bar title
                     Activity.getSupportActionBar().setSubtitle(
-                            (count > 0) ? count + " / " + mViewingMedia.size() + " Selected" : mViewingMedia.size() + " Images"
+                            (count > 0) ? count + " / " + mProjectedImages.size() + " Selected" : mProjectedImages.size() + " Images"
                     );
                 }
             });
 
             // create the list of image items from the images
             ArrayList<ImportImageItem> importImageItems = new ArrayList<>();
-            for (Media media : mViewingMedia) {
-                importImageItems.add(new ImportImageItem(media));
+            for (Image image : mProjectedImages) {
+                importImageItems.add(new ImportImageItem(image));
             }
 
             mAdapter.add(importImageItems);
@@ -233,7 +233,7 @@ public class ImageImportActivity extends AppCompatActivity {
             Filter.filterMenu(menu, R.color.white);
             // action titles
             Activity.getSupportActionBar().setTitle(CurrentBucket.getName());
-            Activity.getSupportActionBar().setSubtitle(mViewingMedia.size() + " Images");
+            Activity.getSupportActionBar().setSubtitle(CurrentBucket.getSize() + " Images");
         }
 
         @Override
@@ -256,9 +256,9 @@ public class ImageImportActivity extends AppCompatActivity {
 
         private void importSelectedImages() {
             if (!mAdapterSelector.getSelectedItems().isEmpty()) {
-                final ArrayList<Media> selectedMedia = new ArrayList<>();
+                final ArrayList<Image> selectedImages = new ArrayList<>();
                 for (ImportImageItem item : mAdapterSelector.getSelectedItems()) {
-                    selectedMedia.add(item.getMedia());
+                    selectedImages.add(item.getImage());
                 }
                 // add database
                 Toast.makeText(Activity, "Saving Selected Items...", Toast.LENGTH_SHORT).show();
@@ -266,7 +266,7 @@ public class ImageImportActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        mDBAccessor.save(selectedMedia);
+                        mDBAccessor.save(selectedImages);
                         Toast.makeText(Activity, "Importing complete!", Toast.LENGTH_SHORT).show();
                     }
                 }).start();

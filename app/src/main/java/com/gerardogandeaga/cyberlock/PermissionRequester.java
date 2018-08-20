@@ -1,6 +1,5 @@
 package com.gerardogandeaga.cyberlock;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
@@ -11,17 +10,16 @@ import android.support.v4.content.ContextCompat;
  * created on 2018-08-13
  */
 public class PermissionRequester {
-
-    public static void requestReadExternalStorage(Activity activity) {
+    public static void requestReadExternalStorage(Activity activity, String permission) {
         ActivityCompat.requestPermissions(
                 activity,
-                new String[] { Manifest.permission.READ_EXTERNAL_STORAGE },
+                new String[] { permission },
                 1
         );
     }
 
-    public static boolean canReadExternalStorage(Activity activity) {
-        int result = ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
+    public static boolean canReadExternalStorage(Activity activity, String permission) {
+        int result = ContextCompat.checkSelfPermission(activity, permission);
         return result == PackageManager.PERMISSION_GRANTED;
     }
 }

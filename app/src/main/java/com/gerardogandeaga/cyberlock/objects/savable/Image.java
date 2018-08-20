@@ -7,47 +7,145 @@ import android.graphics.Bitmap;
  * created on 2018-08-16
  */
 public class Image extends SavableObject {
-    private String mBucket; // album in app
-    private String mId; // image name
-    private String mPath; // new path in app
-    private String mUri; // new uri in app
-    private Bitmap mImageBitmap; // cached images in app
+    // stored data
+    private String mId; // image id
+    private String mDisplayName; // image display name
+    // current
+    private String mCurrentBucket; // album in app
+    private String mCurrentPath; // new path in app
+    private String mCurrentUri; // new uri in app
     // old
-    private String mOldBucket;
-    private String mOldPath;
-    private String mOldUri;
+    private String mOriginalBucket;
+    private String mOriginalPath;
+    private String mOriginalUri;
+    //
+    private Bitmap mImageBitmap; // cached images in app
 
+    /**
+     * building an import image
+     */
+    public Image(String id, String displayName, String bucket, String uri) {
+        this.mId = id;
+        this.mDisplayName = displayName;
+        this.mCurrentBucket = bucket;
+        this.mCurrentUri = uri;
+    }
+
+    /**
+     * building a new image object straight out the db
+     */
     public Image(
             long timeCreated,
-            String bucket,
             String id,
-            String path,
-            String uri
+            String displayName,
+            String currentBucket,
+            String currentPath,
+            String currentUri,
+            String originalBucket,
+            String originalPath,
+            String originalUri
     ) {
         setTimeCreated(timeCreated);
-        this.mBucket = bucket;
+        //
         this.mId = id;
-        this.mPath = path;
-        this.mUri = uri;
+        this.mDisplayName = displayName;
+        this.mCurrentBucket = currentBucket;
+        this.mCurrentPath = currentPath;
+        this.mCurrentUri = currentUri;
+        this.mOriginalBucket = originalBucket;
+        this.mOriginalPath = originalPath;
+        this.mOriginalUri = originalUri;
     }
 
-    public String getBucket() {
-        return mBucket;
+    // setters
+
+    public Image withId(String id) {
+        this.mId = id;
+        return this;
     }
+
+    public Image withDisplayName(String displayName) {
+        this.mDisplayName = displayName;
+        return this;
+    }
+
+    public Image withCurrentBucket(String bucket) {
+        this.mCurrentBucket = bucket;
+        return this;
+    }
+
+    public Image withCurrentPath(String path) {
+        this.mCurrentPath = path;
+        return this;
+    }
+
+    public Image withCurrentUri(String uri) {
+        this.mCurrentUri = uri;
+        return this;
+    }
+
+    public Image withOldBucket(String bucket) {
+        this.mOriginalBucket = bucket;
+        return this;
+    }
+
+    public Image withOldPath(String path) {
+        this.mOriginalPath = path;
+        return this;
+    }
+
+    public Image withOldUri(String uri) {
+        this.mOriginalUri = uri;
+        return this;
+    }
+
+    public Image withImageBitmap(Bitmap bitmap) {
+        this.mImageBitmap = bitmap;
+        return this;
+    }
+
+    // getters
 
     public String getId() {
         return mId;
     }
 
-    public String getPath() {
-        return mPath;
+    public String getDisplayName() {
+        return mDisplayName;
     }
 
-    public String getUri() {
-        return mUri;
+    public String getCurrentBucket() {
+        return mCurrentBucket;
+    }
+
+    public String getCurrentPath() {
+        return mCurrentPath;
+    }
+
+    public String getCurrentUri() {
+        return mCurrentUri;
+    }
+
+    public String getOriginalBucket() {
+        return mOriginalBucket;
+    }
+
+    public String getOriginalPath() {
+        return mOriginalPath;
+    }
+
+    public String getOriginalUri() {
+        return mOriginalUri;
     }
 
     public Bitmap getImageBitmap() {
         return mImageBitmap;
+    }
+
+    // overrides
+
+    @Override
+    public String toString() {
+        return "id < " + mId + " > |" + " name < " + mDisplayName + " > |" + " c_bucket < " + mCurrentBucket + " > ";
     }
 }

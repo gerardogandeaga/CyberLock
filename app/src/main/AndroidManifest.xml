@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- media viewer -->
+        <!-- image viewer -->
         <activity android:name=".activity.ImageViewerActivity">
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN"/>-->
@@ -23,7 +23,7 @@
             <!--</intent-filter>-->
         </activity>
 
-        <!-- media import -->
+        <!-- image import -->
         <activity android:name=".activity.ImageImportActivity">
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN"/>-->

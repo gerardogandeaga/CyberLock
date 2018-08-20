@@ -63,14 +63,18 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConst
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + TABLE_IMAGE + "(" +
+        db.execSQL("CREATE TABLE " + TABLE_IMAGES + "(" +
 
-//              KEY                  DATA TYPE
-                DATE_CREATED +     " INTEGER PRIMARY KEY, " +
-                KEY_BUCKET +       " TEXT, " +
-                KEY_IMAGE_ID +     " TEXT," +
-                KEY_IMAGE_PATH +   " TEXT " +
-                KEY_IMAGE_URI +    " TEXT," +
+//              KEY                    DATA TYPE
+                DATE_CREATED +       " INTEGER PRIMARY KEY, " +
+                KEY_ID +             " TEXT, " +
+                KEY_DISPLAY_NAME +   " TEXT, " +
+                KEY_CURRENT_BUCKET + " TEXT, " +
+                KEY_CURRENT_PATH +   " TEXT, " +
+                KEY_CURRENT_URI +    " TEXT, " +
+                KEY_ORIGINAL_BUCKET +     " TEXT, " +
+                KEY_ORIGINAL_PATH +       " TEXT, " +
+                KEY_ORIGINAL_URI +        " TEXT" +
         ");");
     }
 

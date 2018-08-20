@@ -1,7 +1,5 @@
 package com.gerardogandeaga.cyberlock.objects.savable;
 
-import android.annotation.SuppressLint;
-
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -15,9 +13,11 @@ public abstract class SavableObject implements Serializable {
     Date mDateModified;
     Date mDateCreated;
     boolean mIsNew;
-
-    @SuppressLint("SimpleDateFormat")
     private static final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy 'at' hh:mm aaa");
+
+    public SavableObject() {
+        this.mDateCreated = new Date();
+    }
 
     public String getDate() {
         return (mDateModified == null ? dateFormat.format(mDateCreated) : dateFormat.format(mDateModified));

@@ -63,7 +63,7 @@ public class ImportAlbumItem extends AbstractItem<ImportAlbumItem, ImportAlbumIt
         public void bindView(@NonNull ImportAlbumItem item, @NonNull List<Object> payloads) {
             Name.setText(item.getBucket().getName());
             // add image to the image view
-            Glide.with(App.getContext()).load(item.getBucket().getCoverImageUri()).into(Image);
+            Glide.with(App.getContext()).load(item.getBucket().getCoverUri()).into(Image);
         }
 
         @Override

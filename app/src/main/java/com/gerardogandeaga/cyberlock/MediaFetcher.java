@@ -2,11 +2,10 @@ package com.gerardogandeaga.cyberlock;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 
 import com.gerardogandeaga.cyberlock.objects.Bucket;
-import com.gerardogandeaga.cyberlock.objects.Media;
+import com.gerardogandeaga.cyberlock.objects.savable.Image;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,8 +21,6 @@ import java.util.HashMap;
 public class MediaFetcher {
     private static final String TAG = "MediaFetcher";
 
-    private static final boolean IS_SD_PRESENT = android.os.Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
-
     private static final Uri SD_IMAGES_URI = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
     // information about the images that will be retrieved
@@ -31,15 +28,16 @@ public class MediaFetcher {
             MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
             MediaStore.Images.Media.DATA,
             MediaStore.Images.Media._ID,
+            MediaStore.Images.Media.DISPLAY_NAME
     };
 
     // cache data:
     // data we do not want to have to keep requesting from phone, so we only update these vars when needed.
     // this also saves memory and time by only having one instance of the data
     private static ArrayList<Bucket> BucketCache;
-    private static ArrayList<Media> mediaCache;
+    private static ArrayList<Image> mediaCache;
 
-    private static HashMap<String, ArrayList<Media>> AlbumCache;
+    private static HashMap<String, ArrayList<Image>> AlbumCache;
 
     /**
      * updates cache if BucketCache are null
@@ -57,7 +55,7 @@ public class MediaFetcher {
      * @param selectionKey name of the album to which the arrays are stored under in the HashMap
      * @return list of all intended images with respective selection args
      */
-    public static ArrayList<Media> requestImages(String selectionKey) {
+    public static ArrayList<Image> requestImages(String selectionKey) {
         if (AlbumCache == null || mediaCache == null || mediaCache.size() == 0) {
             cacheData(); // update
         }
@@ -89,24 +87,24 @@ public class MediaFetcher {
                 cursor.moveToPosition(i);
 
                 int idColumn = cursor.getColumnIndex(MediaStore.Images.Media._ID); // image id
+                int displayNameColumn = cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME); // image name
                 int uriColumn = cursor.getColumnIndex(MediaStore.Images.Media.DATA); // uri
                 int bucketNameColumn = cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME); // bucket
                 // string values
                 String id = cursor.getString(idColumn);
+                String displayName = cursor.getString(displayNameColumn);
                 String uri = cursor.getString(uriColumn);
                 String bucketName = cursor.getString(bucketNameColumn);
 
-                // create media and bucket
-                Media media = new Media()
-                        .withId(id)
-                        .withUri(uri)
-                        .withAlbum(bucketName);
-                Bucket bucket = new Bucket()
-                        .withName(bucketName)
-                        .withCoverImageUri(uri);
+                // create image and bucket
+                Image image = new Image(id, displayName, bucketName, uri);
+
+                System.out.println(image);
+
+                Bucket bucket = new Bucket(bucketName, uri);
 
                 // add images to cache
-                mediaCache.add(i, media);
+                mediaCache.add(i, image);
 
                 // update bucket cache
                 addToBucketCache(bucket);
@@ -135,7 +133,7 @@ public class MediaFetcher {
             for (Bucket item : BucketCache) {
                 // find and replace uri
                 if (bucket.equals(item)) {
-                    item.withCoverImageUri(bucket.getCoverImageUri());
+                    item.withCoverUri(bucket.getCoverUri());
                 }
             }
         }
@@ -157,12 +155,12 @@ public class MediaFetcher {
         // add image to map according to the album name
         for (int i = 0; i < BucketCache.size(); i++) {
             Bucket bucket = BucketCache.get(i);
-            ArrayList<Media> mediaArray = new ArrayList<>();
+            ArrayList<Image> mediaArray = new ArrayList<>();
 
             // build the mediaArray with matching bucket
             for (int j = 0; j < mediaCache.size(); j++) {
-                Media media = mediaCache.get(j);
-                if (media.getBucketName().equals(bucket.getName())) {
+                Image media = mediaCache.get(j);
+                if (media.getCurrentBucket().equals(bucket.getName())) {
                     mediaArray.add(media);
                 }
             }

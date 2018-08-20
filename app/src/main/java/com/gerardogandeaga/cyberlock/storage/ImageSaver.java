@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.gerardogandeaga.cyberlock.App;
 import com.gerardogandeaga.cyberlock.GlideApp;
-import com.gerardogandeaga.cyberlock.objects.Media;
 import com.gerardogandeaga.cyberlock.objects.savable.Image;
 
 import java.io.File;
@@ -24,19 +23,19 @@ public class ImageSaver {
     private static final String TAG = "ImageSaver";
     private static final String IMAGE_DIRECTORY = "image_data";
 
-    public String saveMediaToInternalStorage(Media media) throws FileNotFoundException, IOException {
+    public String saveMediaToInternalStorage(Image image) throws FileNotFoundException, IOException {
         ContextWrapper wrapper = new ContextWrapper(App.getContext());
         // path to /data/data/app/app_data/image_dir
         File directory = wrapper.getDir(IMAGE_DIRECTORY, ContextWrapper.MODE_PRIVATE);
         // create imageDir
-        File path = new File(directory, media.getId());
+        File path = new File(directory, image.getId());
 
         try (FileOutputStream out = new FileOutputStream(path)) {
             // compress the bitmap object to write image to the OutputStream
             Bitmap bitmap = GlideApp
                     .with(App.getContext())
                     .asBitmap()
-                    .load(media.getUri())
+                    .load(image.getCurrentUri())
                     .submit()
                     .get();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
@@ -49,7 +48,7 @@ public class ImageSaver {
 
 
     private Bitmap loadImageFromInternalStorage(Image image) throws FileNotFoundException {
-        File file = new File(image.getUri(), "profile.jpg");
+        File file = new File(image.getCurrentUri(), "profile.jpg");
         return BitmapFactory.decodeStream(new FileInputStream(file));
     }
 }
