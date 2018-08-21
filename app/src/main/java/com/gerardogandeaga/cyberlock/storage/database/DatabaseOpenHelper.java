@@ -12,7 +12,7 @@ import net.sqlcipher.database.SQLiteOpenHelper;
  * created on 2018-08-14
  */
 public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConstants {
-    public static final String DATABASE = "cyberlock.sql";
+    public static final String DATABASE = "cyberlock.sqlite";
     private static final int VERSION = 1;
 
     private SQLiteDatabase mDatabase;
@@ -50,6 +50,10 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConst
         return mDatabase;
     }
 
+    public SQLiteDatabase getReadableDatabase() {
+        return getWritableDatabase();
+    }
+
     @Override
     public synchronized void close() {
         super.close();
@@ -65,16 +69,16 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConst
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + TABLE_IMAGES + "(" +
 
-//              KEY                    DATA TYPE
-                DATE_CREATED +       " INTEGER PRIMARY KEY, " +
-                KEY_ID +             " TEXT, " +
-                KEY_DISPLAY_NAME +   " TEXT, " +
-                KEY_CURRENT_BUCKET + " TEXT, " +
-                KEY_CURRENT_PATH +   " TEXT, " +
-                KEY_CURRENT_URI +    " TEXT, " +
-                KEY_ORIGINAL_BUCKET +     " TEXT, " +
-                KEY_ORIGINAL_PATH +       " TEXT, " +
-                KEY_ORIGINAL_URI +        " TEXT" +
+//              KEY                     DATA TYPE
+                DATE_CREATED +        " INTEGER PRIMARY KEY, " +
+                KEY_ID +              " TEXT, " +
+                KEY_DISPLAY_NAME +    " TEXT, " +
+                KEY_CURRENT_BUCKET +  " TEXT, " +
+                KEY_CURRENT_PATH +    " TEXT, " +
+                KEY_CURRENT_URI +     " TEXT, " +
+                KEY_ORIGINAL_BUCKET + " TEXT, " +
+                KEY_ORIGINAL_PATH +   " TEXT, " +
+                KEY_ORIGINAL_URI +    " TEXT" +
         ");");
     }
 

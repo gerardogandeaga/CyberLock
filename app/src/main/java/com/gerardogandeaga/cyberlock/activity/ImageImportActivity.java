@@ -256,21 +256,14 @@ public class ImageImportActivity extends AppCompatActivity {
 
         private void importSelectedImages() {
             if (!mAdapterSelector.getSelectedItems().isEmpty()) {
+                // create final array of selected images
                 final ArrayList<Image> selectedImages = new ArrayList<>();
                 for (ImportImageItem item : mAdapterSelector.getSelectedItems()) {
                     selectedImages.add(item.getImage());
                 }
-                // add database
-                Toast.makeText(Activity, "Saving Selected Items...", Toast.LENGTH_SHORT).show();
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mDBAccessor.save(selectedImages);
-                        Toast.makeText(Activity, "Importing complete!", Toast.LENGTH_SHORT).show();
-                    }
-                }).start();
-
+                // store images and write data to db
+                Toast.makeText(Activity, "Moving Files...", Toast.LENGTH_SHORT).show();
+                mDBAccessor.save(selectedImages);
             } else {
                 Toast.makeText(Activity, "No Items Selected", Toast.LENGTH_SHORT).show();
             }

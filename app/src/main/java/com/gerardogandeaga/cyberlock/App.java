@@ -4,8 +4,11 @@ import android.app.Application;
 import android.content.Context;
 
 import com.gerardogandeaga.cyberlock.storage.database.DatabaseOpenHelper;
+import com.gerardogandeaga.cyberlock.util.Storage;
 
 import net.sqlcipher.database.SQLiteDatabase;
+
+import java.io.FileNotFoundException;
 
 /**
  * @author gerardogandeaga
@@ -23,6 +26,12 @@ public class App extends Application {
         super.onCreate();
 
         Context = this;
+        // create application directories
+        try {
+            Storage.FileManager.initApplicationDirectories(this);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         // start the sql db
         SQLiteDatabase.loadLibs(Context);

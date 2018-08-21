@@ -10,10 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.gerardogandeaga.cyberlock.storage.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.lists.decorations.ImageItemDecoration;
 import com.gerardogandeaga.cyberlock.lists.items.ImageItem;
 import com.gerardogandeaga.cyberlock.objects.savable.Image;
+import com.gerardogandeaga.cyberlock.storage.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.util.Scale;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 
@@ -39,8 +39,8 @@ public class ImageListViewerFragment extends Fragment {
         this.mActivity = ((AppCompatActivity) getActivity());
 
         // pull images from database
-        DBImageAccessor DBAccessor = DBImageAccessor.getInstance();
-        this.mImages = DBAccessor.getImages();
+        DBImageAccessor accessor = DBImageAccessor.getInstance();
+        this.mImages = accessor.getImages();
     }
 
     /**

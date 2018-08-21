@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import com.gerardogandeaga.cyberlock.App;
 import com.gerardogandeaga.cyberlock.interfaces.constants.DBImageConstants;
 import com.gerardogandeaga.cyberlock.objects.savable.Image;
+import com.gerardogandeaga.cyberlock.util.Storage;
 
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
@@ -32,25 +33,28 @@ public class DBImageAccessor implements DBImageConstants {
         return INSTANCE;
     }
 
-    private Cursor getCursor(SQLiteDatabase db) {
-        return db.rawQuery(QUERY, null);
-    }
+    /**
+     * saving image information will first move image to its new directory in the application and save it's information to the db
+     * @param imageArrayList images to be moved and saved
+     */
+    public void save(ArrayList<Image> imageArrayList) {
+        // first move images to new dir
+        Storage.FileManager.storeImages(imageArrayList);
 
-    public void save(ArrayList<Image> mediaArrayList) {
+        // save image data
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-
         db.beginTransaction();
-        for (Image image : mediaArrayList) {
+        for (Image image : imageArrayList) {
             ContentValues values = new ContentValues();
-            values.put(DATE_CREATED,       new Date().getTime());
-            values.put(KEY_ID,             image.getId());
-            values.put(KEY_DISPLAY_NAME,   image.getId());
-            values.put(KEY_CURRENT_BUCKET, image.getCurrentBucket());
-            values.put(KEY_CURRENT_PATH,   image.getCurrentPath());
-            values.put(KEY_CURRENT_URI,    image.getCurrentUri());
-            values.put(KEY_ORIGINAL_BUCKET,     image.getOriginalBucket());
-            values.put(KEY_ORIGINAL_PATH,       image.getOriginalPath());
-            values.put(KEY_ORIGINAL_URI,        image.getOriginalUri());
+            values.put(DATE_CREATED,        new Date().getTime());
+            values.put(KEY_ID,              image.getId());
+            values.put(KEY_DISPLAY_NAME,    image.getId());
+            values.put(KEY_CURRENT_BUCKET,  image.getCurrentBucket());
+            values.put(KEY_CURRENT_PATH,    image.getCurrentPath());
+            values.put(KEY_CURRENT_URI,     image.getCurrentUri());
+            values.put(KEY_ORIGINAL_BUCKET, image.getOriginalBucket());
+            values.put(KEY_ORIGINAL_PATH,   image.getOriginalPath());
+            values.put(KEY_ORIGINAL_URI,    image.getOriginalUri());
             db.insert(TABLE_IMAGES, null, values);
         }
         db.setTransactionSuccessful();
@@ -71,11 +75,14 @@ public class DBImageAccessor implements DBImageConstants {
         db.endTransaction();
     }
 
+    /**
+     * @return array list of images
+     */
     public ArrayList<Image> getImages() {
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         ArrayList<Image> imageArrayList = new ArrayList<>();
-        Cursor cursor = getCursor(db);
+        Cursor cursor = db.rawQuery(QUERY, null);
         cursor.moveToFirst();
 
         while (!cursor.isAfterLast()) {
@@ -88,16 +95,16 @@ public class DBImageAccessor implements DBImageConstants {
     }
 
     private Image buildImage(Cursor cursor) {
-        long created =         cursor.getLong(POS_DATE_CREATED);
-        String id =            cursor.getString(POS_ID);
-        String displayName =   cursor.getString(POS_DISPLAY_NAME);
-        String currentBucket = cursor.getString(POS_CURRENT_BUCKET);
-        String currentPath =   cursor.getString(POS_CURRENT_PATH);
-        String currentUri =    cursor.getString(POS_CURRENT_URI);
-        String oldBucket =     cursor.getString(POS_ORIGINAL_BUCKET);
-        String oldPath =       cursor.getString(POS_ORIGINAL_PATH);
-        String oldUri =        cursor.getString(POS_ORIGINAL_URI);
+        long created =          cursor.getLong(POS_DATE_CREATED);
+        String id =             cursor.getString(POS_ID);
+        String displayName =    cursor.getString(POS_DISPLAY_NAME);
+        String currentBucket =  cursor.getString(POS_CURRENT_BUCKET);
+        String currentPath =    cursor.getString(POS_CURRENT_PATH);
+        String currentUri =     cursor.getString(POS_CURRENT_URI);
+        String originalBucket = cursor.getString(POS_ORIGINAL_BUCKET);
+        String originalPath =   cursor.getString(POS_ORIGINAL_PATH);
+        String originalUri =    cursor.getString(POS_ORIGINAL_URI);
         // create
-        return new Image(created, id, displayName, currentBucket, currentPath, currentUri, oldBucket, oldPath, oldUri);
+        return new Image(created, id, displayName, currentBucket, currentPath, currentUri, originalBucket, originalPath, originalUri);
     }
 }

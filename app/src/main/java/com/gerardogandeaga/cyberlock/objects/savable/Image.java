@@ -84,17 +84,17 @@ public class Image extends SavableObject {
         return this;
     }
 
-    public Image withOldBucket(String bucket) {
+    public Image withOriginalBucket(String bucket) {
         this.mOriginalBucket = bucket;
         return this;
     }
 
-    public Image withOldPath(String path) {
+    public Image withOriginalPath(String path) {
         this.mOriginalPath = path;
         return this;
     }
 
-    public Image withOldUri(String uri) {
+    public Image withOriginalUri(String uri) {
         this.mOriginalUri = uri;
         return this;
     }

@@ -99,7 +99,7 @@ public class MediaFetcher {
                 // create image and bucket
                 Image image = new Image(id, displayName, bucketName, uri);
 
-                System.out.println(image);
+//                System.out.println(image);
 
                 Bucket bucket = new Bucket(bucketName, uri);
 
