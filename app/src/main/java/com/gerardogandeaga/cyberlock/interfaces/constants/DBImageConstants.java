@@ -10,50 +10,44 @@ public interface DBImageConstants extends DBConstants {
     String TABLE_IMAGES = "image_table";
 
     /**
-     * unique integer tag
-     */
-    String KEY_ID = "image_id";
-    int POS_ID = 1;
-
-    /**
      * name of the image with extension
      */
     String KEY_DISPLAY_NAME = "image_display_name";
-    int POS_DISPLAY_NAME = 2;
+    int POS_DISPLAY_NAME = 1;
 
     /**
      * current album image belongs to
      */
     String KEY_CURRENT_BUCKET = "image_c_bucket";
-    int POS_CURRENT_BUCKET = 3;
+    int POS_CURRENT_BUCKET = 2;
 
     /**
      * path to image's directory
      */
     String KEY_CURRENT_PATH = "image_c_path";
-    int POS_CURRENT_PATH = 4;
+    int POS_CURRENT_PATH = 3;
 
     /**
      * complete path to image
      */
     String KEY_CURRENT_URI = "image_c_uri";
-    int POS_CURRENT_URI = 5;
+    int POS_CURRENT_URI = 4;
 
     /**
      * album image belonged to before being imported
      */
     String KEY_ORIGINAL_BUCKET = "image_o_bucket";
-    int POS_ORIGINAL_BUCKET = 6;
+    int POS_ORIGINAL_BUCKET = 5;
 
     /**
      * path to image's directory before being imported
      */
     String KEY_ORIGINAL_PATH = "image_o_path";
-    int POS_ORIGINAL_PATH = 7;
+    int POS_ORIGINAL_PATH = 6;
 
     /**
      * complete path to image before being imported
      */
     String KEY_ORIGINAL_URI = "image_o_uri";
-    int POS_ORIGINAL_URI = 8;
+    int POS_ORIGINAL_URI = 7;
 }

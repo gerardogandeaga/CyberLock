@@ -13,6 +13,7 @@ import com.gerardogandeaga.cyberlock.objects.savable.Image;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -73,6 +74,23 @@ public class ImportImageItem extends AbstractItem<ImportImageItem, ImportImageIt
             // remove image from view
             GlideApp.with(App.getContext())
                     .clear(Image);
+        }
+    }
+
+    public static class ItemBuilder {
+
+        public static ImportImageItem buildItem(Image image) {
+            return new ImportImageItem(image);
+        }
+
+        public static List<ImportImageItem> buildImages(List<Image> imageList) {
+            List<ImportImageItem> importImageItems = new ArrayList<>();
+
+            for (Image image : imageList) {
+                importImageItems.add(buildItem(image));
+            }
+
+            return importImageItems;
         }
     }
 }

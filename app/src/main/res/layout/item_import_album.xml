@@ -14,10 +14,10 @@
         android:layout_marginEnd="3dp"
         android:layout_marginStart="3dp"
         android:layout_marginTop="3dp"
-        android:background="@color/white"
+        android:background="@drawable/bk_import_album"
         android:foreground="?attr/selectableItemBackgroundBorderless"
-        app:cardCornerRadius="5dp"
-        app:cardElevation="2dp"
+        app:cardCornerRadius="2dp"
+        app:cardElevation="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1.1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -32,7 +32,7 @@
             <ImageView
                 android:id="@+id/imgImage"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 android:scaleType="centerCrop"/>
 

@@ -3,12 +3,9 @@ package com.gerardogandeaga.cyberlock;
 import android.app.Application;
 import android.content.Context;
 
-import com.gerardogandeaga.cyberlock.storage.database.DatabaseOpenHelper;
-import com.gerardogandeaga.cyberlock.util.Storage;
+import com.gerardogandeaga.cyberlock.database.DatabaseOpenHelper;
 
 import net.sqlcipher.database.SQLiteDatabase;
-
-import java.io.FileNotFoundException;
 
 /**
  * @author gerardogandeaga
@@ -18,6 +15,8 @@ import java.io.FileNotFoundException;
  * such as easy contexts and single db inits
  */
 public class App extends Application {
+    private static final String TAG = "App";
+
     private static Context Context;
     private static DatabaseOpenHelper Database;
 
@@ -26,21 +25,28 @@ public class App extends Application {
         super.onCreate();
 
         Context = this;
-        // create application directories
-        try {
-            Storage.FileManager.initApplicationDirectories(this);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
 
+        // todo ask permissions
+
+        // todo create needed dirs
+
+        // start db
+        loadDatabase();
+    }
+
+    private void loadDatabase() {
         // start the sql db
         SQLiteDatabase.loadLibs(Context);
-
 
         // this do is always created on application startup and is made static to only one instance of the
         // db at all times for better performance
         Database = new DatabaseOpenHelper(Context);
 
+        if (getDatabasePath(DatabaseOpenHelper.DATABASE).exists()) {
+            System.out.println("app: database does exists");
+        } else {
+            System.out.println("app: database does not exist");
+        }
 
         // init db
         // begin db and set password // todo create db accessors
@@ -51,6 +57,8 @@ public class App extends Application {
         database.update();
         //
     }
+
+    // static getters
 
     public static Context getContext() {
         return Context;

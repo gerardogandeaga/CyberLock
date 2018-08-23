@@ -10,7 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.widget.FrameLayout;
 
 import com.gerardogandeaga.cyberlock.R;
-import com.gerardogandeaga.cyberlock.storage.database.DatabaseOpenHelper;
+import com.gerardogandeaga.cyberlock.database.DatabaseOpenHelper;
 import com.gerardogandeaga.cyberlock.fragments.ImageListViewerFragment;
 
 import butterknife.BindView;

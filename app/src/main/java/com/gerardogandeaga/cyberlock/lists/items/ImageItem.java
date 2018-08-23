@@ -65,7 +65,7 @@ public class ImageItem extends AbstractItem<ImageItem, ImageItem.ViewHolder> {
         @Override
         public void bindView(@NonNull ImageItem item, @NonNull List<Object> payloads) {
             // add image to the image view
-            Glide.with(App.getContext()).load(item.getImage().getImageBitmap()).into(Image); // load image from bitmap source
+            Glide.with(App.getContext()).load(item.getImage().getCurrentUri()).into(Image); // load image from bitmap source
         }
 
         @Override
@@ -73,6 +73,11 @@ public class ImageItem extends AbstractItem<ImageItem, ImageItem.ViewHolder> {
             // remove image from view
             GlideApp.with(App.getContext()).clear(Image);
         }
+    }
+
+    @Override
+    public String toString() {
+        return mImage.getCurrentUri();
     }
 
     /**
@@ -84,10 +89,10 @@ public class ImageItem extends AbstractItem<ImageItem, ImageItem.ViewHolder> {
             return new ImageItem(image);
         }
 
-        public static ArrayList<ImageItem> buildItems(ArrayList<Image> images) {
-            ArrayList<ImageItem> imageItems = new ArrayList<>();
+        public static List<ImageItem> buildItems(List<Image> imageList) {
+            List<ImageItem> imageItems = new ArrayList<>();
 
-            for (Image image : images) {
+            for (Image image : imageList) {
                 imageItems.add(buildItem(image));
             }
 

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -32,9 +33,10 @@ import com.gerardogandeaga.cyberlock.lists.items.ImportAlbumItem;
 import com.gerardogandeaga.cyberlock.lists.items.ImportImageItem;
 import com.gerardogandeaga.cyberlock.objects.Bucket;
 import com.gerardogandeaga.cyberlock.objects.savable.Image;
-import com.gerardogandeaga.cyberlock.storage.database.DBImageAccessor;
+import com.gerardogandeaga.cyberlock.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.util.Filter;
 import com.gerardogandeaga.cyberlock.util.Scale;
+import com.gerardogandeaga.cyberlock.util.Storage;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.ISelectionListener;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
@@ -43,6 +45,7 @@ import com.mikepenz.fastadapter.listeners.OnLongClickListener;
 import com.mikepenz.fastadapter.select.SelectExtension;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -65,7 +68,7 @@ public class ImageImportActivity extends AppCompatActivity {
     private static MenuInflater ActivityMenuInflater;
 
     // data
-    private static ArrayList<Bucket> BucketArrayList;
+    private static List<Bucket> BucketList;
     private static Bucket CurrentBucket;
 
     // views
@@ -81,6 +84,10 @@ public class ImageImportActivity extends AppCompatActivity {
             // request permission
             PermissionRequester.requestReadExternalStorage(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         } else {
+            // ---------------- todo move permissions to the App.java and also init applications Directories
+            Storage.FileManager.initApplicationDirectories();
+            // ----------------
+
             setContentView(R.layout.activity_toolbar_only);
             ButterKnife.bind(this);
 
@@ -93,7 +100,7 @@ public class ImageImportActivity extends AppCompatActivity {
 
             // request image information
             MediaFetcher.requestImages(null); // <- we call first to init the caches
-            BucketArrayList = MediaFetcher.requestAlbums();
+            BucketList = MediaFetcher.requestAlbums();
 
             // prepare fragment
             Manager = getFragmentManager();
@@ -158,7 +165,7 @@ public class ImageImportActivity extends AppCompatActivity {
         public static final String TAG = "ImagesFragment";
 
         private DBImageAccessor mDBAccessor;
-        private ArrayList<Image> mProjectedImages;
+        private List<Image> mProjectedImages;
         private FastItemAdapter<ImportImageItem> mAdapter;
         private SelectExtension<ImportImageItem> mAdapterSelector;
 
@@ -216,11 +223,7 @@ public class ImageImportActivity extends AppCompatActivity {
             });
 
             // create the list of image items from the images
-            ArrayList<ImportImageItem> importImageItems = new ArrayList<>();
-            for (Image image : mProjectedImages) {
-                importImageItems.add(new ImportImageItem(image));
-            }
-
+            List<ImportImageItem> importImageItems = ImportImageItem.ItemBuilder.buildImages(mProjectedImages);
             mAdapter.add(importImageItems);
             
             // attach to fragment
@@ -256,14 +259,41 @@ public class ImageImportActivity extends AppCompatActivity {
 
         private void importSelectedImages() {
             if (!mAdapterSelector.getSelectedItems().isEmpty()) {
-                // create final array of selected images
-                final ArrayList<Image> selectedImages = new ArrayList<>();
-                for (ImportImageItem item : mAdapterSelector.getSelectedItems()) {
-                    selectedImages.add(item.getImage());
-                }
                 // store images and write data to db
-                Toast.makeText(Activity, "Moving Files...", Toast.LENGTH_SHORT).show();
-                mDBAccessor.save(selectedImages);
+                // todo progress bar
+                final ProgressDialog load = new ProgressDialog(Activity);
+                load.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                load.setCancelable(false);
+                load.setProgress(0);
+                load.setSecondaryProgress(0);
+                load.setMessage("Importing Images");
+                load.show();
+                // save on new thread
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // create final array of selected images
+                        final List<Image> selectedImages = new ArrayList<>();
+                        for (ImportImageItem item : mAdapterSelector.getSelectedItems()) {
+                            selectedImages.add(item.getImage());
+                        }
+                        load.setMax(selectedImages.size());
+                        // start the writable process in the db
+                        mDBAccessor.openWritable();
+                        for (Image image : selectedImages) {
+                            // add to db
+                            mDBAccessor.save(image);
+                            // increment progress
+                            load.incrementProgressBy(1);
+                            load.incrementSecondaryProgressBy(1);
+                        }
+                        // finalize
+                        mDBAccessor.close();
+                        load.dismiss(); // remove dialog
+                    }
+                }).start();
+                // remove selections
+                deselectAll();
             } else {
                 Toast.makeText(Activity, "No Items Selected", Toast.LENGTH_SHORT).show();
             }
@@ -331,7 +361,7 @@ public class ImageImportActivity extends AppCompatActivity {
 
             // create the list of image items from the images
             ArrayList<ImportAlbumItem> importAlbumItems = new ArrayList<>();
-            for (Bucket bucket : BucketArrayList) {
+            for (Bucket bucket : BucketList) {
                 importAlbumItems.add(new ImportAlbumItem(bucket));
             }
 

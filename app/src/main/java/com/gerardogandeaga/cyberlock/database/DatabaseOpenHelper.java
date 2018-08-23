@@ -1,4 +1,4 @@
-package com.gerardogandeaga.cyberlock.storage.database;
+package com.gerardogandeaga.cyberlock.database;
 
 import android.content.Context;
 
@@ -26,7 +26,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConst
         this.mPassword = password;
     }
 
-    public String getPassword() {
+    private String getPassword() {
         return mPassword;
     }
 
@@ -70,8 +70,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConst
         db.execSQL("CREATE TABLE " + TABLE_IMAGES + "(" +
 
 //              KEY                     DATA TYPE
-                DATE_CREATED +        " INTEGER PRIMARY KEY, " +
-                KEY_ID +              " TEXT, " +
+                UNIQUE_ID +           " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 KEY_DISPLAY_NAME +    " TEXT, " +
                 KEY_CURRENT_BUCKET +  " TEXT, " +
                 KEY_CURRENT_PATH +    " TEXT, " +

@@ -10,6 +10,7 @@ import com.gerardogandeaga.cyberlock.objects.savable.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author gerardogandeaga
@@ -34,16 +35,16 @@ public class MediaFetcher {
     // cache data:
     // data we do not want to have to keep requesting from phone, so we only update these vars when needed.
     // this also saves memory and time by only having one instance of the data
-    private static ArrayList<Bucket> BucketCache;
-    private static ArrayList<Image> mediaCache;
+    private static List<Bucket> BucketCache;
+    private static List<Image> mediaCache;
 
-    private static HashMap<String, ArrayList<Image>> AlbumCache;
+    private static HashMap<String, List<Image>> AlbumCache;
 
     /**
      * updates cache if BucketCache are null
      * @return list of all buckets on phone
      */
-    public static ArrayList<Bucket> requestAlbums() {
+    public static List<Bucket> requestAlbums() {
         if (BucketCache == null || BucketCache.size() == 0) {
             cacheData(); // update
         }
@@ -55,7 +56,7 @@ public class MediaFetcher {
      * @param selectionKey name of the album to which the arrays are stored under in the HashMap
      * @return list of all intended images with respective selection args
      */
-    public static ArrayList<Image> requestImages(String selectionKey) {
+    public static List<Image> requestImages(String selectionKey) {
         if (AlbumCache == null || mediaCache == null || mediaCache.size() == 0) {
             cacheData(); // update
         }
@@ -155,7 +156,7 @@ public class MediaFetcher {
         // add image to map according to the album name
         for (int i = 0; i < BucketCache.size(); i++) {
             Bucket bucket = BucketCache.get(i);
-            ArrayList<Image> mediaArray = new ArrayList<>();
+            List<Image> mediaArray = new ArrayList<>();
 
             // build the mediaArray with matching bucket
             for (int j = 0; j < mediaCache.size(); j++) {

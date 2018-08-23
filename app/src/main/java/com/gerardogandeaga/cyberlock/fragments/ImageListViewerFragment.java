@@ -13,11 +13,11 @@ import android.view.ViewGroup;
 import com.gerardogandeaga.cyberlock.lists.decorations.ImageItemDecoration;
 import com.gerardogandeaga.cyberlock.lists.items.ImageItem;
 import com.gerardogandeaga.cyberlock.objects.savable.Image;
-import com.gerardogandeaga.cyberlock.storage.database.DBImageAccessor;
+import com.gerardogandeaga.cyberlock.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.util.Scale;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author gerardogandeaga
@@ -30,7 +30,7 @@ public class ImageListViewerFragment extends Fragment {
 
     private AppCompatActivity mActivity;
 
-    private ArrayList<Image> mImages;
+    private List<Image> mImageList;
     private FastItemAdapter<ImageItem> mAdapter;
 
     @Override
@@ -40,7 +40,9 @@ public class ImageListViewerFragment extends Fragment {
 
         // pull images from database
         DBImageAccessor accessor = DBImageAccessor.getInstance();
-        this.mImages = accessor.getImages();
+        accessor.openReadable();
+        this.mImageList = accessor.getImages();
+        accessor.close();
     }
 
     /**
@@ -62,12 +64,12 @@ public class ImageListViewerFragment extends Fragment {
         this.mAdapter = new FastItemAdapter<>();
         mAdapter.setHasStableIds(true);
 
-        // add items
-        ArrayList<ImageItem> imageItems = ImageItem.ItemBuilder.buildItems(mImages);
-        mAdapter.add(imageItems);
-
         // attach adapter
         imageViewRecyclerView.setAdapter(mAdapter);
+
+        // add items
+        List<ImageItem> imageItems = ImageItem.ItemBuilder.buildItems(mImageList);
+        mAdapter.add(imageItems);
 
         return imageViewRecyclerView;
     }

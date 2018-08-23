@@ -35,7 +35,6 @@ public class Image extends SavableObject {
      * building a new image object straight out the db
      */
     public Image(
-            long timeCreated,
             String id,
             String displayName,
             String currentBucket,
@@ -45,8 +44,6 @@ public class Image extends SavableObject {
             String originalPath,
             String originalUri
     ) {
-        setTimeCreated(timeCreated);
-        //
         this.mId = id;
         this.mDisplayName = displayName;
         this.mCurrentBucket = currentBucket;
