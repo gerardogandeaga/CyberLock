@@ -1,9 +1,10 @@
-package com.gerardogandeaga.cyberlock;
+package com.gerardogandeaga.cyberlock.store;
 
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 
+import com.gerardogandeaga.cyberlock.App;
 import com.gerardogandeaga.cyberlock.objects.Bucket;
 import com.gerardogandeaga.cyberlock.objects.savable.Image;
 
@@ -36,7 +37,7 @@ public class MediaFetcher {
     // data we do not want to have to keep requesting from phone, so we only update these vars when needed.
     // this also saves memory and time by only having one instance of the data
     private static List<Bucket> BucketCache;
-    private static List<Image> mediaCache;
+    private static List<Image> ImageCache;
 
     private static HashMap<String, List<Image>> AlbumCache;
 
@@ -57,7 +58,7 @@ public class MediaFetcher {
      * @return list of all intended images with respective selection args
      */
     public static List<Image> requestImages(String selectionKey) {
-        if (AlbumCache == null || mediaCache == null || mediaCache.size() == 0) {
+        if (AlbumCache == null || ImageCache == null || ImageCache.size() == 0) {
             cacheData(); // update
         }
 
@@ -82,7 +83,7 @@ public class MediaFetcher {
         if (cursor != null && cursor.getCount() > 0) {
             // init cache arrays
             BucketCache = new ArrayList<>();
-            mediaCache = new ArrayList<>();
+            ImageCache = new ArrayList<>();
 
             for (int i = 0; i < cursor.getCount(); i++) {
                 cursor.moveToPosition(i);
@@ -105,7 +106,7 @@ public class MediaFetcher {
                 Bucket bucket = new Bucket(bucketName, uri);
 
                 // add images to cache
-                mediaCache.add(i, image);
+                ImageCache.add(i, image);
 
                 // update bucket cache
                 addToBucketCache(bucket);
@@ -115,7 +116,7 @@ public class MediaFetcher {
         }
 
         // we reverse it to match the order of the phone
-        Collections.reverse(mediaCache);
+        Collections.reverse(ImageCache);
 
         // setup albums for fast access
         setupImageAlbumsHashMap();
@@ -151,23 +152,22 @@ public class MediaFetcher {
 
     private static void setupImageAlbumsHashMap() {
         AlbumCache = new HashMap<>();
-        AlbumCache.put(null, mediaCache);
+        AlbumCache.put(null, ImageCache); // null key = all images
 
         // add image to map according to the album name
-        for (int i = 0; i < BucketCache.size(); i++) {
-            Bucket bucket = BucketCache.get(i);
-            List<Image> mediaArray = new ArrayList<>();
+        for (Bucket bucket : BucketCache) {
+            List<Image> imageList = new ArrayList<>();
 
             // build the mediaArray with matching bucket
-            for (int j = 0; j < mediaCache.size(); j++) {
-                Image media = mediaCache.get(j);
-                if (media.getCurrentBucket().equals(bucket.getName())) {
-                    mediaArray.add(media);
+            for (int i = 0; i < ImageCache.size(); i++) {
+                Image image = ImageCache.get(i);
+                if (image.getCurrentBucket().equals(bucket.getName())) {
+                    imageList.add(image);
                 }
             }
 
             // add array to map with bucket name being the key
-            AlbumCache.put(bucket.getName(), mediaArray);
+            AlbumCache.put(bucket.getName(), imageList);
         }
     }
 }

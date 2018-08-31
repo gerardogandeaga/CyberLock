@@ -17,6 +17,11 @@ import butterknife.BindView;
  * SecureActivity acts like almost an overlay activity that will run auto log out
  * action and traffic timers. this activit handles complex background logic and general process for activity
  * while children classes focus on user interaction and views
+ *
+ * todo implement permission requester
+ * todo auto logout
+ * todo back pressed manager - stack?
+ * todo implement in all activities
  */
 public abstract class SecureActivity extends AppCompatActivity {
     private static final String TAG = "SecureActivity";
@@ -39,7 +44,6 @@ public abstract class SecureActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
     }
 
@@ -53,12 +57,12 @@ public abstract class SecureActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        LOCK_MANAGER.onStart(this);
+//        LOCK_MANAGER.onStart(this);
     }
 
     @Override
     protected void onPause() {
-        LOCK_MANAGER.onPause(this);
+//        LOCK_MANAGER.onPause(this);
         super.onPause();
     }
 
@@ -140,7 +144,6 @@ public abstract class SecureActivity extends AppCompatActivity {
             getSupportActionBar().setHomeAsUpIndicator(icon);
         }
     }
-
 
     /**
      * IntentStack is an object that keeps a list of intents (Activities) that the user has traversed through.

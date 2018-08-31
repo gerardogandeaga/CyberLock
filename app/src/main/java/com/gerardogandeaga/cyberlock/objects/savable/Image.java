@@ -2,6 +2,11 @@ package com.gerardogandeaga.cyberlock.objects.savable;
 
 import android.graphics.Bitmap;
 
+import com.gerardogandeaga.cyberlock.App;
+import com.gerardogandeaga.cyberlock.GlideApp;
+
+import java.util.concurrent.ExecutionException;
+
 /**
  * @author gerardogandeaga
  * created on 2018-08-16
@@ -12,14 +17,10 @@ public class Image extends SavableObject {
     private String mDisplayName; // image display name
     // current
     private String mCurrentBucket; // album in app
-    private String mCurrentPath; // new path in app
     private String mCurrentUri; // new uri in app
     // old
     private String mOriginalBucket;
-    private String mOriginalPath;
     private String mOriginalUri;
-    //
-    private Bitmap mImageBitmap; // cached images in app
 
     /**
      * building an import image
@@ -38,19 +39,15 @@ public class Image extends SavableObject {
             String id,
             String displayName,
             String currentBucket,
-            String currentPath,
             String currentUri,
             String originalBucket,
-            String originalPath,
             String originalUri
     ) {
         this.mId = id;
         this.mDisplayName = displayName;
         this.mCurrentBucket = currentBucket;
-        this.mCurrentPath = currentPath;
         this.mCurrentUri = currentUri;
         this.mOriginalBucket = originalBucket;
-        this.mOriginalPath = originalPath;
         this.mOriginalUri = originalUri;
     }
 
@@ -71,11 +68,6 @@ public class Image extends SavableObject {
         return this;
     }
 
-    public Image withCurrentPath(String path) {
-        this.mCurrentPath = path;
-        return this;
-    }
-
     public Image withCurrentUri(String uri) {
         this.mCurrentUri = uri;
         return this;
@@ -86,18 +78,8 @@ public class Image extends SavableObject {
         return this;
     }
 
-    public Image withOriginalPath(String path) {
-        this.mOriginalPath = path;
-        return this;
-    }
-
     public Image withOriginalUri(String uri) {
         this.mOriginalUri = uri;
-        return this;
-    }
-
-    public Image withImageBitmap(Bitmap bitmap) {
-        this.mImageBitmap = bitmap;
         return this;
     }
 
@@ -115,10 +97,6 @@ public class Image extends SavableObject {
         return mCurrentBucket;
     }
 
-    public String getCurrentPath() {
-        return mCurrentPath;
-    }
-
     public String getCurrentUri() {
         return mCurrentUri;
     }
@@ -127,16 +105,16 @@ public class Image extends SavableObject {
         return mOriginalBucket;
     }
 
-    public String getOriginalPath() {
-        return mOriginalPath;
-    }
-
     public String getOriginalUri() {
         return mOriginalUri;
     }
 
-    public Bitmap getImageBitmap() {
-        return mImageBitmap;
+    public Bitmap getImageBitmap() throws ExecutionException, InterruptedException {
+        return GlideApp.with(App.getContext())
+                       .asBitmap()
+                       .load(mCurrentUri)
+                       .submit()
+                       .get();
     }
 
     // overrides

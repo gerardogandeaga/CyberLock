@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme">
 
         <!-- image viewer -->
-        <activity android:name=".activity.ImageViewerActivity">
+        <activity android:name=".activity.ImageGalleryActivity">
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN"/>-->
 

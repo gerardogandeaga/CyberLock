@@ -1,8 +1,9 @@
-package com.gerardogandeaga.cyberlock.database;
+package com.gerardogandeaga.cyberlock.store.database;
 
 import android.content.Context;
 
-import com.gerardogandeaga.cyberlock.interfaces.constants.DBImageConstants;
+import com.gerardogandeaga.cyberlock.interfaces.DBImageBucketConstants;
+import com.gerardogandeaga.cyberlock.interfaces.DBImageConstants;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
@@ -11,7 +12,7 @@ import net.sqlcipher.database.SQLiteOpenHelper;
  * @author gerardogandeaga
  * created on 2018-08-14
  */
-public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConstants {
+public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConstants, DBImageBucketConstants {
     public static final String DATABASE = "cyberlock.sqlite";
     private static final int VERSION = 1;
 
@@ -67,17 +68,25 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper implements DBImageConst
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // images
         db.execSQL("CREATE TABLE " + TABLE_IMAGES + "(" +
 
 //              KEY                     DATA TYPE
                 UNIQUE_ID +           " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 KEY_DISPLAY_NAME +    " TEXT, " +
                 KEY_CURRENT_BUCKET +  " TEXT, " +
-                KEY_CURRENT_PATH +    " TEXT, " +
                 KEY_CURRENT_URI +     " TEXT, " +
                 KEY_ORIGINAL_BUCKET + " TEXT, " +
-                KEY_ORIGINAL_PATH +   " TEXT, " +
                 KEY_ORIGINAL_URI +    " TEXT" +
+        ");");
+
+        // image buckets
+        db.execSQL("CREATE TABLE " + TABLE_IMAGE_BUCKETS + "(" +
+
+//              KEY                      DATA TYPE
+                UNIQUE_ID +            " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                KEY_BUCKET_NAME +      " TEXT, " +
+                KEY_BUCKET_COVER_URI + " TEXT" +
         ");");
     }
 

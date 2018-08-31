@@ -23,17 +23,17 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import com.gerardogandeaga.cyberlock.MediaFetcher;
 import com.gerardogandeaga.cyberlock.PermissionRequester;
 import com.gerardogandeaga.cyberlock.R;
 import com.gerardogandeaga.cyberlock.dialogs.ImagePreviewDialog;
 import com.gerardogandeaga.cyberlock.interfaces.OnButtonPressedListener;
 import com.gerardogandeaga.cyberlock.lists.decorations.ImageItemDecoration;
-import com.gerardogandeaga.cyberlock.lists.items.ImportAlbumItem;
+import com.gerardogandeaga.cyberlock.lists.items.BucketItem;
 import com.gerardogandeaga.cyberlock.lists.items.ImportImageItem;
 import com.gerardogandeaga.cyberlock.objects.Bucket;
 import com.gerardogandeaga.cyberlock.objects.savable.Image;
-import com.gerardogandeaga.cyberlock.database.DBImageAccessor;
+import com.gerardogandeaga.cyberlock.store.MediaFetcher;
+import com.gerardogandeaga.cyberlock.store.database.DBImageAccessor;
 import com.gerardogandeaga.cyberlock.util.Filter;
 import com.gerardogandeaga.cyberlock.util.Scale;
 import com.gerardogandeaga.cyberlock.util.Storage;
@@ -58,8 +58,6 @@ import butterknife.ButterKnife;
  * permission checks for EXTERNAL STORAGE.
  */
 public class ImageImportActivity extends AppCompatActivity {
-    private static final String TAG = "ImageImportActivity";
-
     private static OnButtonPressedListener ButtonPressedListener;
 
     private static AppCompatActivity Activity;
@@ -79,6 +77,13 @@ public class ImageImportActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        onCreateProtocol();
+    }
+
+    /**
+     * separate function so we can also create view after permissions have been requested and then granted
+     */
+    private void onCreateProtocol() {
         // here we need to check if we have permission to read storage data. if not then we have to cancel any requests
         if (!PermissionRequester.canReadExternalStorage(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             // request permission
@@ -136,8 +141,8 @@ public class ImageImportActivity extends AppCompatActivity {
         FragmentTransaction transaction = Manager.beginTransaction();
 
         switch (fragTag) {
-            case ImagesFragment.TAG:
-                ImagesFragment imageFrag = new ImagesFragment();
+            case ImageFragment.TAG:
+                ImageFragment imageFrag = new ImageFragment();
                 ButtonPressedListener = imageFrag;
                 transaction.replace(container, imageFrag);
                 break;
@@ -161,8 +166,8 @@ public class ImageImportActivity extends AppCompatActivity {
 
     // fragments
 
-    public static class ImagesFragment extends Fragment implements OnButtonPressedListener {
-        public static final String TAG = "ImagesFragment";
+    public static class ImageFragment extends Fragment implements OnButtonPressedListener {
+        public static final String TAG = "ImageFragment";
 
         private DBImageAccessor mDBAccessor;
         private List<Image> mProjectedImages;
@@ -246,11 +251,11 @@ public class ImageImportActivity extends AppCompatActivity {
                     switchFragments(AlbumsFragment.TAG);
                     return true;
 
-                case R.id.mnu_done:
+                case R.id.menu_done:
                     importSelectedImages();
                     return true;
 
-                case R.id.mnu_select_all:
+                case R.id.menu_select_all:
                     selectAll();
                     return true;
             }
@@ -343,29 +348,25 @@ public class ImageImportActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
             // recycler view adapter configs
-            FastItemAdapter<ImportAlbumItem> adapter = new FastItemAdapter<>();
+            FastItemAdapter<BucketItem> adapter = new FastItemAdapter<>();
             adapter.setHasStableIds(true);
 
             // attach to adapter
             GalleryRecyclerView.setAdapter(adapter);
 
             // selecting albums
-            adapter.withOnClickListener(new OnClickListener<ImportAlbumItem>() {
+            adapter.withOnClickListener(new OnClickListener<BucketItem>() {
                 @Override
-                public boolean onClick(@Nullable View v, @NonNull IAdapter<ImportAlbumItem> adapter, @NonNull ImportAlbumItem item, int position) {
+                public boolean onClick(@Nullable View v, @NonNull IAdapter<BucketItem> adapter, @NonNull BucketItem item, int position) {
                     CurrentBucket = item.getBucket();
-                    switchFragments(ImagesFragment.TAG);
+                    switchFragments(ImageFragment.TAG);
                     return false;
                 }
             });
 
             // create the list of image items from the images
-            ArrayList<ImportAlbumItem> importAlbumItems = new ArrayList<>();
-            for (Bucket bucket : BucketList) {
-                importAlbumItems.add(new ImportAlbumItem(bucket));
-            }
-
-            adapter.add(importAlbumItems);
+            List<BucketItem> bucketItems = new BucketItem.Builder().buildItems(BucketList);
+            adapter.add(bucketItems);
             
             // attach to fragment
             return GalleryRecyclerView;
@@ -376,7 +377,7 @@ public class ImageImportActivity extends AppCompatActivity {
             menu.clear();
             // action title
             Activity.getSupportActionBar().setTitle("Albums");
-            Activity.getSupportActionBar().setSubtitle(null);
+            Activity.getSupportActionBar().setSubtitle("Select album to import");
         }
 
         @Override
@@ -394,7 +395,9 @@ public class ImageImportActivity extends AppCompatActivity {
 
         @Override
         public void onBackPressed() {
-            Toast.makeText(Activity, "Back!", Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(Activity, MenuActivity.class);
+            startActivity(i);
+            Activity.finish();
         }
     }
 
@@ -406,7 +409,7 @@ public class ImageImportActivity extends AppCompatActivity {
         if (requestCode == 1) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // permit granted
-                recreate(); // recreate activity
+                onCreateProtocol(); // continue create normally
             } else {
                 // permit denied
                 moveTaskToBack(true);

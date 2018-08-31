@@ -25,7 +25,7 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.btnViewerActivity) public void viewerActivity() {
-        Intent i = new Intent(this, ImageViewerActivity.class);
+        Intent i = new Intent(this, ImageGalleryActivity.class);
         startActivity(i);
         finish();
     }

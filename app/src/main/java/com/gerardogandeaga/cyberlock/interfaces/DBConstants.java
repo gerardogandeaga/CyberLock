@@ -1,4 +1,4 @@
-package com.gerardogandeaga.cyberlock.interfaces.constants;
+package com.gerardogandeaga.cyberlock.interfaces;
 
 /**
  * @author gerardogandeaga

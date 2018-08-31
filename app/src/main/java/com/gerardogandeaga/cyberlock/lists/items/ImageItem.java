@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide;
 import com.gerardogandeaga.cyberlock.App;
 import com.gerardogandeaga.cyberlock.GlideApp;
 import com.gerardogandeaga.cyberlock.R;
+import com.gerardogandeaga.cyberlock.lists.ItemBuiler;
 import com.gerardogandeaga.cyberlock.objects.savable.Image;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
@@ -83,13 +84,15 @@ public class ImageItem extends AbstractItem<ImageItem, ImageItem.ViewHolder> {
     /**
      * builds image items from images to use in an adapter
      */
-    public static class ItemBuilder {
+    public static class Builder implements ItemBuiler<ImageItem, Image> {
 
-        public static ImageItem buildItem(Image image) {
+        @Override
+        public ImageItem buildItem(Image image) {
             return new ImageItem(image);
         }
 
-        public static List<ImageItem> buildItems(List<Image> imageList) {
+        @Override
+        public List<ImageItem> buildItems(List<Image> imageList) {
             List<ImageItem> imageItems = new ArrayList<>();
 
             for (Image image : imageList) {
